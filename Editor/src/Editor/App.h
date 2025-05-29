@@ -4,8 +4,11 @@
 
 #include "Layer.h"
 
+#include "imgui.h"
 
-int main(int argc, char* argv[]);
+
+struct GLFWwindow;
+
 
 namespace Editor
 {
@@ -47,8 +50,8 @@ namespace Editor
 
 	private:
 		ApplicationSpecification m_Spec;
-
-		bool m_Running = false;
+		GLFWwindow* m_WindowHandle;
+		bool m_Running = true;
 
 		std::vector<std::shared_ptr<Layer>> m_LayerStack;
 		std::function<void()> m_MenubarCallback;//needs imgui

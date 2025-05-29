@@ -18,12 +18,20 @@ project "Editor"
        "../vendor/stb_image",
 
        "%{IncludeDir.glm}",
+       "%{IncludeDir.Glad}",
+   }
+
+   defines
+   {
+ 		"_CRT_SECURE_NO_WARNINGS",
+        "GLFW_INCLUDE_NONE"
    }
 
    links
    {
         "ImGui",
         "GLFW",
+        "Glad"
    }
 
    targetdir ("../bin/" .. outputdir .. "/%{prj.name}")
