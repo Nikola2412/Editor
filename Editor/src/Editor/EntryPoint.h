@@ -1,6 +1,11 @@
 #pragma once
 
+#ifdef _WIN32
+
 #define PLATFORM_WINDOWS // for some reasone vs 2022 wont use predefined 
+
+#endif // WIN32
+
 
 #ifdef PLATFORM_WINDOWS
 

@@ -1,5 +1,15 @@
 #include <Editor.h>
 
+class ExampleLayer : public Editor::Layer
+{
+public:
+	ExampleLayer() : Layer("Example") {}
+	virtual void OnUIRender() override
+	{
+
+	}
+};
+
 
 Editor::Application* Editor::CreateApplication(int argc, char** argv) 
 {
@@ -10,6 +20,7 @@ Editor::Application* Editor::CreateApplication(int argc, char** argv)
 
 
 	Editor::Application* app = new Editor::Application(spec);
+	app->PushLayer<ExampleLayer>();
 	return app;
 }
 
