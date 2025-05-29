@@ -1,17 +1,21 @@
-workspace "App"
+workspace "Editor"
    architecture "x64"
    configurations { "Debug", "Release", "Dist" }
-   startproject "App"
+   startproject "EditorApp"
 
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
+
+IncludeDir = {}
+IncludeDir["glm"] = "../vendor/glm"
+
 
 group "Dependencies"
    include "vendor/imgui"
    include "vendor/glfw"
 group ""
 
-group "Core"
+group "Editor"
 include "Editor"
 group ""
 
-include "App"
+include "EditorApp"

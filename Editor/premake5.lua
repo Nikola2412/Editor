@@ -5,25 +5,28 @@ project "Editor"
    targetdir "bin/%{cfg.buildcfg}"
    staticruntime "off"
 
+   pchheader "pch.h"
+   pchsource "src/pch.cpp"
+
    files { "src/**.h", "src/**.cpp" }
 
    includedirs
    {
-      "../vendor/imgui",
-      "../vendor/glfw/include",
-      "../vendor/stb_image",
+       "src",
+       "../vendor/imgui",
+       "../vendor/glfw/include",
+       "../vendor/stb_image",
 
-      "%{IncludeDir.glm}",
+       "%{IncludeDir.glm}",
    }
 
    links
    {
-       "ImGui",
-       "GLFW",
-
+        "ImGui",
+        "GLFW",
    }
 
-   targetdir ("bin/" .. outputdir .. "/%{prj.name}")
+   targetdir ("../bin/" .. outputdir .. "/%{prj.name}")
    objdir ("../bin-int/" .. outputdir .. "/%{prj.name}")
 
    filter "system:windows"

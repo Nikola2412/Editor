@@ -1,4 +1,4 @@
-project "App"
+project "EditorApp"
    kind "ConsoleApp"
    language "C++"
    cppdialect "C++17"
@@ -14,7 +14,7 @@ project "App"
 
       "../Editor/src",
 
-      "%{IncludeDir.glm}",
+      "%{IncludeDir.glm}"
    }
 
     links
