@@ -2,6 +2,23 @@
 
 #include <memory>
 
+#ifdef DEBUG
+	#if defined(PLATFORM_WINDOWS)
+		#define DEBUGBREAK() __debugbreak()
+	#elif defined(PH_PLATFORM_LINUX)
+		#include <signal.h>
+		#define DEBUGBREAK() raise(SIGTRAP)
+	#else
+		#error "Platform doesn't support debugbreak yet!"
+#endif
+	#define ENABLE_ASSERTS
+#else
+#	define DEBUGBREAK()
+#endif
+
+#define EXPAND_MACRO(x) x
+#define STRINGIFY_MACRO(x) #x
+
 namespace Editor {
 
 	template<typename T>
@@ -20,3 +37,5 @@ namespace Editor {
 		return std::make_shared<T>(std::forward<Args>(args)...);
 	}
 }
+
+#include "Asserts.h"

@@ -2,7 +2,7 @@
 
 #ifdef _WIN32
 
-#define PLATFORM_WINDOWS // for some reasone vs 2022 wont use predefined 
+	#define PLATFORM_WINDOWS // for some reasone vs 2022 wont use predefined in this file
 
 #endif // WIN32
 
@@ -24,7 +24,7 @@ namespace Editor {
 	}
 }
 
-#ifdef WL_DIST
+#ifdef DIST
 
 #include <Windows.h>
 
@@ -40,6 +40,6 @@ int main(int argc, char** argv)
 	return Editor::Main(argc, argv);
 }
 
-#endif // WL_DIST
+#endif // DIST
 
-#endif // WL_PLATFORM_WINDOWS
+#endif // PLATFORM_WINDOWS

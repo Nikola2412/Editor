@@ -13,6 +13,9 @@
     <ClInclude Include="src\Editor\App.h">
       <Filter>Editor</Filter>
     </ClInclude>
+    <ClInclude Include="src\Editor\Asserts.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
     <ClInclude Include="src\Editor\Core.h">
       <Filter>Editor</Filter>
     </ClInclude>

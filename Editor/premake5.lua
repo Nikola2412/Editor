@@ -39,21 +39,21 @@ project "Editor"
 
    filter "system:windows"
       systemversion "latest"
-      defines { "WL_PLATFORM_WINDOWS" }
+      defines { "PLATFORM_WINDOWS" }
 
    filter "configurations:Debug"
-      defines { "WL_DEBUG" }
+      defines { "DEBUG" }
       runtime "Debug"
       symbols "On"
 
    filter "configurations:Release"
-      defines { "WL_RELEASE" }
+      defines { "RELEASE" }
       runtime "Release"
       optimize "On"
       symbols "On"
 
    filter "configurations:Dist"
-      defines { "WL_DIST" }
+      defines { "DIST" }
       runtime "Release"
       optimize "On"
       symbols "Off"
