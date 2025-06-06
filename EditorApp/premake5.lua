@@ -1,48 +1,53 @@
 project "EditorApp"
-   kind "ConsoleApp"
-   language "C++"
-   cppdialect "C++17"
-   targetdir "bin/%{cfg.buildcfg}"
-   staticruntime "off"
+	kind "ConsoleApp"
+	language "C++"
+	cppdialect "C++17"
+	targetdir "bin/%{cfg.buildcfg}"
+	staticruntime "off"
 
-   files { "src/**.h", "src/**.cpp" }
 
-   includedirs
-   {
-      "../vendor/imgui",
-      "../vendor/glfw/include",
+	targetdir ("../bin/" .. outputdir .. "/%{prj.name}")
+	objdir ("../bin-int/" .. outputdir .. "/%{prj.name}")
 
-      "../Editor/src",
+	files
+	{
+		"src/**.h",
+		"src/**.cpp",
+	}
 
-      "%{IncludeDir.glm}"
-   }
+	includedirs
+	{
+		"%{wks.location}/Editor/src",
+		"%{wks.location}/Editor/vendor"
+	}
 
-    links
-    {
-        "Editor"
-    }
+	links
+	{
+		"Editor"
+	}
 
-   targetdir ("../bin/" .. outputdir .. "/%{prj.name}")
-   objdir ("../bin-int/" .. outputdir .. "/%{prj.name}")
+	buildoptions
+	{ 
+		"/utf-8" ,
+		"/IGNORE:4099"
+	}
 
-   filter "system:windows"
+	filter "system:windows"
       systemversion "latest"
-      defines { "WL_PLATFORM_WINDOWS" }
+      defines { "PLATFORM_WINDOWS" }
 
-   filter "configurations:Debug"
-      defines { "WL_DEBUG" }
-      runtime "Debug"
-      symbols "On"
 
-   filter "configurations:Release"
-      defines { "WL_RELEASE" }
-      runtime "Release"
-      optimize "On"
-      symbols "On"
+	filter "configurations:Debug"
+		defines "DEBUG"
+		runtime "Debug"
+		symbols "on"
 
-   filter "configurations:Dist"
-      kind "WindowedApp"
-      defines { "WL_DIST" }
-      runtime "Release"
-      optimize "On"
-      symbols "Off"
+	filter "configurations:Release"
+		defines "RELEASE"
+		runtime "Release"
+		optimize "on"
+
+	filter "configurations:Dist"
+		defines "DIST"
+		runtime "Release"
+		optimize "on"

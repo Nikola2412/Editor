@@ -1,5 +1,10 @@
 #pragma once
 
+#ifndef PCH_H
+#define PCH_H
+
+#include "framework.h"
+
 
 #include <iostream>
 #include <memory>
@@ -13,3 +18,5 @@
 #include <vector>
 #include <unordered_map>
 #include <unordered_set>
+
+#endif //PCH_H

@@ -1,15 +1,9 @@
-[submodule "Editor/vendor/imgui/src"]
-	path = Editor/vendor/imgui/src
-	url = https://github.com/ocornut/imgui
-[submodule "vendor/imgui"]
-	path = vendor/imgui
-	url = https://github.com/TheCherno/imgui
-[submodule "vendor/glfw"]
-	path = vendor/glfw
-	url = https://github.com/thecherno/glfw
-[submodule "vendor/GLFW"]
-	path = vendor/GLFW
-	url = https://github.com/TheCherno/GLFW
-[submodule "vendor/glm"]
-	path = vendor/glm
+[submodule "Editor/vendor/GLFW"]
+	path = Editor/vendor/GLFW
+	url = https://github.com/TheCherno/glfw.git
+[submodule "Editor/vendor/glm"]
+	path = Editor/vendor/glm
 	url = https://github.com/g-truc/glm
+[submodule "Editor/vendor/imgui"]
+	path = Editor/vendor/imgui
+	url = https://github.com/TheCherno/imgui

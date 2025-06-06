@@ -8,17 +8,24 @@ project "Editor"
    pchheader "pch.h"
    pchsource "src/pch.cpp"
 
-   files { "src/**.h", "src/**.cpp" }
+   targetdir ("../bin/" .. outputdir .. "/%{prj.name}")
+   objdir ("../bin-int/" .. outputdir .. "/%{prj.name}")
+
+   files 
+   {
+        "src/**.h",
+        "src/**.cpp",
+        "vendor/glm/glm/**.hpp",
+ 	    "vendor/glm/glm/**.inl",
+   }
 
    includedirs
    {
-       "src",
-       "../vendor/imgui",
-       "../vendor/glfw/include",
-       "../vendor/stb_image",
-
-       "%{IncludeDir.glm}",
-       "%{IncludeDir.Glad}",
+        "src",
+		"%{IncludeDir.GLFW}",
+		"%{IncludeDir.Glad}",
+		"%{IncludeDir.glm}",
+        "%{IncludeDir.ImGui}"
    }
 
    defines
@@ -29,13 +36,13 @@ project "Editor"
 
    links
    {
-        "ImGui",
         "GLFW",
-        "Glad"
+        "Glad",
+        "ImGui"
    }
 
-   targetdir ("../bin/" .. outputdir .. "/%{prj.name}")
-   objdir ("../bin-int/" .. outputdir .. "/%{prj.name}")
+   buildoptions { "/utf-8" }
+
 
    filter "system:windows"
       systemversion "latest"

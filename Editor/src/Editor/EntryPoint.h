@@ -1,23 +1,15 @@
 #pragma once
 
-#ifdef _WIN32
-
-	#define PLATFORM_WINDOWS // for some reasone vs 2022 wont use predefined in this file
-
-#endif // WIN32
-
 
 #ifdef PLATFORM_WINDOWS
 
 #include "App.h"
 
-extern Editor::Application* Editor::CreateApplication(int argc, char** argv);
-
 namespace Editor {
 
 	int Main(int argc, char** argv)
 	{
-		Editor::Application* app = Editor::CreateApplication(argc, argv);
+		auto app = Editor::CreateApplication();
 		app->Run();
 		delete app;
 		return 0;
