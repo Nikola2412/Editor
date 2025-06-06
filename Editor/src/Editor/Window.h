@@ -10,9 +10,12 @@ namespace Editor {
 		uint32_t Width;
 		uint32_t Height;
 
+		bool VSync;
+
 		WindowProps(const std::string& title = "Piranha Engine",
 			uint32_t width = 1600,
-			uint32_t height = 900) : Title(title), Width(width), Height(height) {
+			uint32_t height = 900,
+			bool VSync = true) : Title(title), Width(width), Height(height), VSync(VSync) {
 		}
 	};
 
@@ -24,10 +27,15 @@ namespace Editor {
 
 		void Update();
 
+		void Resize(uint32_t w,uint32_t h);
+
+		void SetVSync(bool enable = true);
+
 		void Init(const WindowProps& spec);
 
 	private:
 		GLFWwindow* m_Window;
+		WindowProps m_Data;
 	};
 
 }

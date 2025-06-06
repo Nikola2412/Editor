@@ -10,6 +10,17 @@ namespace Editor {
 
 	static uint8_t GLFWWindowCount = 0;
 
+	static void on_window_size_callback(GLFWwindow* window, int width, int height)
+	{
+		auto m_W = static_cast<Window*>(glfwGetWindowUserPointer(window));
+		m_W->Resize(width,height);
+	}
+
+	static void on_window_close_callback(GLFWwindow* window)
+	{
+		Application::Get().Close();
+	}
+
 	static void glfw_error_callback(int error, const char* description)
 	{
 		fprintf(stderr, "Glfw Error %d: %s\n", error, description);
@@ -17,6 +28,8 @@ namespace Editor {
 
 	void Window::Init(const WindowProps& spec)
 	{
+		m_Data = spec;
+
 		if (GLFWWindowCount == 0)
 		{
 			int success = glfwInit();
@@ -30,9 +43,12 @@ namespace Editor {
 
 		glfwSetWindowUserPointer(m_Window, this);
 
+		glfwSetWindowSizeCallback(m_Window, on_window_size_callback);
+		glfwSetWindowCloseCallback(m_Window, on_window_close_callback);
+
 		glfwMakeContextCurrent(m_Window);
 
-		glfwSwapInterval(1);
+		SetVSync(spec.VSync);
 
 		int status = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
 		if (!status)
@@ -45,7 +61,7 @@ namespace Editor {
 
 	}
 
-	Window::Window(const WindowProps& spec)
+	Window::Window(const WindowProps& spec) : m_Data(spec)
 	{
 		Init(spec);
 	}
@@ -63,18 +79,27 @@ namespace Editor {
 
 	void Window::Update()
 	{
+		glClearColor(0.1f, 0.1f, 0.1f, 1);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 		glfwPollEvents();
 		glfwSwapBuffers(m_Window);
-
-		glClearColor(0, 0, 0, 1);
-		glClear(GL_COLOR_BUFFER_BIT);
-
-		if (glfwWindowShouldClose(m_Window))
-		{
-			Application::Get().Close();
-		}
-
 	}
 
+	void Window::Resize(uint32_t w, uint32_t h)
+	{
+		m_Data.Width = w;
+		m_Data.Height = h;
 
+		glViewport(0, 0, m_Data.Width, m_Data.Height);
+	}
+	void Window::SetVSync(bool enabled)
+	{
+		if (enabled)
+			glfwSwapInterval(1);
+		else
+			glfwSwapInterval(0);
+
+		m_Data.VSync = enabled;
+	}
 }
