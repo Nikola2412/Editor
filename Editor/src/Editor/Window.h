@@ -25,6 +25,9 @@ namespace Editor {
 		Window(const WindowProps& spec = WindowProps());
 		~Window();
 
+		uint32_t GetWidth() const { return m_Data.Width; }
+		uint32_t GetHeight() const { return m_Data.Height; }
+
 		void Update();
 
 		void Resize(uint32_t w,uint32_t h);
@@ -32,6 +35,8 @@ namespace Editor {
 		void SetVSync(bool enable = true);
 
 		void Init(const WindowProps& spec);
+
+		void* GetNativeWindow() const { return m_Window; };
 
 	private:
 		GLFWwindow* m_Window;

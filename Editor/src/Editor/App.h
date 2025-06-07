@@ -1,7 +1,5 @@
 #pragma once
-
 #include "pch.h"
-
 #include "Core.h"
 
 #include "Window.h"
@@ -9,7 +7,6 @@
 
 
 struct GLFWwindow;
-
 
 namespace Editor
 {
@@ -25,25 +22,42 @@ namespace Editor
 		~Application() = default;
 
 		void Run();
-		void SetUICallBack(const std::function<void()>& UICallback) { m_UICallback = UICallback; }//needs imgui
+		//void SetUICallBack(const std::function<void()>& UICallback) { m_UICallback = UICallback; }//needs imgui
+
+		Window& GetWindow() { return *m_WindowHandle; };
 
 		template<typename T>
 		void PushLayer()
 		{
-			ASSERT(std::is_base_of<Layer, T>::value, "Pushed type is not subclass of Layer!");
+			static_assert(std::is_base_of<Layer, T>::value, "Pushed type is not subclass of Layer!");
 			m_LayerStack.emplace_back(std::make_shared<T>())->OnAttach();
 		}
 
-		void PushLayer(const std::shared_ptr<Layer>& layer) 
+		void PushLayer(const std::shared_ptr<Layer>& layer)
 		{
-			m_LayerStack.emplace_back(layer); 
-			layer->OnAttach(); 
+			m_LayerStack.emplace_back(layer);
+			layer->OnAttach();
+		}
+
+		template<typename T>
+		void SetLayer()
+		{
+			static_assert(std::is_base_of<Layer, T>::value, "Pushed type is not subclass of Layer!");
+			layer = std::make_shared<T>();
+			layer->OnAttach();
+		}
+
+		void SetLayer(const std::shared_ptr<Layer>& layer)
+		{
+			this->layer = layer;
+			this->layer->OnAttach();
 		}
 
 		void Close();
 
 
 		static Application& Get() { return *Instance; };
+
 	private:
 		void Shutdown();
 
@@ -57,6 +71,8 @@ namespace Editor
 
 	private:
 		static Application* Instance;
+	public:
+		std::shared_ptr<Layer> layer;
 	};
 
 	Application* CreateApplication();

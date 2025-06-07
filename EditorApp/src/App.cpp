@@ -1,17 +1,19 @@
-#include <Editor.h>
+#include "App.h"
 
-
-Editor::Application* Editor::CreateApplication() 
+void UI(Editor::Application* app)
 {
-	Editor::ApplicationSpecification spec;
-	spec.Name = "Editor";
-
-
-	Editor::Application* app = new Editor::Application(spec);
-	app->SetUICallBack([app] ()
+	if (ImGui::BeginMenuBar())
+	{
+		if (ImGui::MenuItem("Save"))
 		{
-			
-		});
-	return app;
-}
+			app->Close();
+		}
+		if (ImGui::MenuItem("Exit"))
+		{
+			app->Close();
+		}
+		ImGui::EndMenuBar();
+	}
 
+	ImGui::ShowDemoWindow();
+}

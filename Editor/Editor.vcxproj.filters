@@ -1328,5 +1328,6 @@
     <ClCompile Include="src\pch.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\Editor\Layer.cpp" />
   </ItemGroup>
 </Project>

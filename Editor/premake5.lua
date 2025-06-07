@@ -25,7 +25,7 @@ project "Editor"
 		"%{IncludeDir.GLFW}",
 		"%{IncludeDir.Glad}",
 		"%{IncludeDir.glm}",
-        "%{IncludeDir.ImGui}"
+        "%{IncludeDir.ImGui}",
    }
 
    defines
@@ -36,9 +36,9 @@ project "Editor"
 
    links
    {
+        "ImGui",
         "GLFW",
         "Glad",
-        "ImGui"
    }
 
    buildoptions { "/utf-8" }
