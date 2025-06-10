@@ -22,6 +22,7 @@ project "Editor"
    includedirs
    {
         "src",
+		"%{IncludeDir.stb_image}",
 		"%{IncludeDir.GLFW}",
 		"%{IncludeDir.Glad}",
 		"%{IncludeDir.glm}",

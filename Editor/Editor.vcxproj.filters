@@ -1314,6 +1314,9 @@
     <ClInclude Include="vendor\glm\glm\vector_relational.hpp">
       <Filter>vendor\glm\glm</Filter>
     </ClInclude>
+    <ClInclude Include="src\Editor\Texture.h" />
+    <ClInclude Include="src\Editor\RendererAPI.h" />
+    <ClInclude Include="src\Editor\OpenGLTexture2D.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Editor\App.cpp">
@@ -1329,5 +1332,8 @@
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="src\Editor\Layer.cpp" />
+    <ClCompile Include="src\Editor\Texture.cpp" />
+    <ClCompile Include="src\Editor\RendererAPI.cpp" />
+    <ClCompile Include="src\Editor\OpenGLTexture2D.cpp" />
   </ItemGroup>
 </Project>

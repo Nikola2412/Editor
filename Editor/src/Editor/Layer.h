@@ -10,10 +10,12 @@ namespace Editor
 		virtual ~Layer() = default;
 
 		void SetUICallBack(const std::function<void()>& UICallback) { m_UICallback = UICallback; }
+	protected:
+		virtual void onAttach() {};
 
 	private:
-		virtual void OnAttach();
-		virtual void OnDetach();
+		void OnAttach();
+		void OnDetach();
 
 		void Begin();
 		void End();
@@ -22,6 +24,8 @@ namespace Editor
 
 		void dockSpace(); // maybe make virtual
 		void UICallBackRender();
+
+	protected:
 		virtual void OnUIRender() {}
 
 		std::string GetName() const { return m_Name; }
