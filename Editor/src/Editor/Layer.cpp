@@ -26,8 +26,8 @@ namespace Editor
 		//io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
 		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;           // Enable Docking
 		io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;         // Enable Multi-Viewport / Platform Windows
-		//IO.ConfigFlags |= ImGuiConfigFlags_ViewportsNoTaskBarIcons;
-		//IO.ConfigFlags |= ImGuiConfigFlags_ViewportsNoMerge;
+		//io.ConfigFlags |= ImGuiConfigFlags_ViewportsNoTaskBarIcons;
+		//io.ConfigFlags |= ImGuiConfigFlags_ViewportsNoMerge;
 
 
 		// Setup Dear ImGui style
@@ -40,6 +40,18 @@ namespace Editor
 		{
 			style.WindowRounding = 0.0f;
 			style.Colors[ImGuiCol_WindowBg].w = 1.0f;
+
+			style.WindowRounding = 8.0f;    // Rounded window corners
+			style.FrameRounding = 4.0f;     // Rounded frames (buttons, inputs)
+			style.PopupRounding = 8.0f;     // Rounded popups
+			style.Alpha = 1.0f;             // Global alpha
+			style.ItemSpacing = ImVec2(10.0f, 6.0f); // Spacing between items
+			style.FramePadding = ImVec2(6.0f, 6.0f); // Padding for frames (buttons, text fields)
+			style.WindowPadding = ImVec2(8.0f, 8.0f); // Padding for windows
+			style.ScrollbarSize = 12.0f;    // Scrollbar size
+			style.ScrollbarRounding = 12.0f; // Rounded scrollbars
+			style.GrabRounding = 4.0f;      // Rounded grab (slider, scrollbar)
+			style.GrabMinSize = 12.0f;      // Minimum size for grabs
 		}
 
 		Application& app = Application::Get();
