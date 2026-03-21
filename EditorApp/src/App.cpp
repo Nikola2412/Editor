@@ -40,6 +40,7 @@ void menuUI(Editor::Application* app)
 void ExampleLayer::onAttach()
 {
 	m_CheckerBoard = Texture2D::Load("assets/Checkerboard.png");
+    m_CheckerBoardSize = 256;
 }
 
 void ExampleLayer::OnUIRender() {
@@ -48,7 +49,7 @@ void ExampleLayer::OnUIRender() {
 
 	if (m_CheckerBoard)
 	{
-        if (ImGui::ImageButton((ImTextureID)m_CheckerBoard->GetRendererID(), ImVec2(256, 256)))
+        if (ImGui::ImageButton((ImTextureID)m_CheckerBoard->GetRendererID(), ImVec2(m_CheckerBoardSize, m_CheckerBoardSize)))
         {
             ImGui::OpenPopup("TextureSettings");
         }
@@ -65,20 +66,23 @@ void ExampleLayer::OnUIRender() {
             ImGui::Text("Texture Properties:");
 
             // Example sliders to manipulate texture properties (assuming these are set somewhere in the texture class)
-            static float textureScale = 1.0f;
-            ImGui::SliderFloat("Scale", &textureScale, 0.1f, 5.0f, "x%.2f");
+            static float textureScale = 5.0f;
+            ImGui::SliderFloat("Scale", &textureScale, 1.0f, 10.0f, "x%.2f");
 
+            m_CheckerBoardSize = textureScale * 256 / 5.0f;
+
+            /* Not implemented
             static float textureRotation = 0.0f;
-            ImGui::SliderFloat("Rotation", &textureRotation, 0.0f, 360.0f, "%.1f°");
+            ImGui::SliderFloat("Rotation", &textureRotation, 0.0f, 360.0f, "%.1f deg");
 
             static bool invertColors = false;
             ImGui::Checkbox("Invert Colors", &invertColors);
+            */
 
             // Apply button for texture properties
-            if (ImGui::Button("Apply Changes"))
+            if (ImGui::Button("Reset Changes"))
             {
-                // Apply texture scale, rotation, and color inversion (your actual texture class logic will be here)
-                //ApplyTextureSettings(m_CheckerBoard, textureScale, textureRotation, invertColors);
+                textureScale = 5.0f;
             }
 
             ImGui::EndPopup();

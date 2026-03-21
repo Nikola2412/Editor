@@ -1331,9 +1331,11 @@
     <ClCompile Include="src\pch.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="src\Editor\Layer.cpp" />
     <ClCompile Include="src\Editor\Texture.cpp" />
     <ClCompile Include="src\Editor\RendererAPI.cpp" />
     <ClCompile Include="src\Editor\OpenGLTexture2D.cpp" />
+    <ClCompile Include="src\Editor\Layer.cpp">
+      <Filter>src\Editor</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

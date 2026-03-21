@@ -17,7 +17,7 @@ namespace Editor
 	void Layer::OnAttach()
 	{
 		std::cout << "Layer: " << this->GetName() << " attached" << '\n';
-
+		
 		// Setup Dear ImGui context
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
@@ -28,8 +28,7 @@ namespace Editor
 		io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;         // Enable Multi-Viewport / Platform Windows
 		//io.ConfigFlags |= ImGuiConfigFlags_ViewportsNoTaskBarIcons;
 		//io.ConfigFlags |= ImGuiConfigFlags_ViewportsNoMerge;
-
-
+		io.ConfigFlags |= ImGuiConfigFlags_DpiEnableScaleViewports;
 		// Setup Dear ImGui style
 		ImGui::StyleColorsDark();
 		//ImGui::StyleColorsClassic();
