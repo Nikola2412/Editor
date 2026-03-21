@@ -16,8 +16,15 @@ public:
 
 	virtual void OnUIRender() override;
 private:
+	void nextImg(int i) { m_ListID = (m_ListID + i) % m_TextureList.size(); }
+
 	Ref<Texture2D> m_CheckerBoard;
+	Ref<Texture2D> m_Next;
+	Ref<Texture2D> m_Prev;
+	std::vector<Ref<Texture2D>> m_TextureList;
 	unsigned int m_CheckerBoardSize;
+
+	unsigned int m_ListID = 0;
 };
 
 void menuUI(Editor::Application* app);

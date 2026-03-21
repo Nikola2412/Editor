@@ -41,14 +41,25 @@ void ExampleLayer::onAttach()
 {
 	m_CheckerBoard = Texture2D::Load("assets/Checkerboard.png");
     m_CheckerBoardSize = 256;
+
+    m_Next = Texture2D::Load("assets/next.png");
+    m_Prev = Texture2D::Load("assets/prev.png");
+
+	m_TextureList.reserve(4);
+
+	m_TextureList.emplace_back(Texture2D::Load("assets/0.png"));
+	m_TextureList.emplace_back(Texture2D::Load("assets/1.png"));
+	m_TextureList.emplace_back(Texture2D::Load("assets/2.png"));
+	m_TextureList.emplace_back(Texture2D::Load("assets/3.png"));
 }
 
 void ExampleLayer::OnUIRender() {
+#pragma region Test_Window
 
-	ImGui::Begin("Test Window");
+    ImGui::Begin("Test Window");
 
-	if (m_CheckerBoard)
-	{
+    if (m_CheckerBoard)
+    {
         if (ImGui::ImageButton((ImTextureID)m_CheckerBoard->GetRendererID(), ImVec2(m_CheckerBoardSize, m_CheckerBoardSize)))
         {
             ImGui::OpenPopup("TextureSettings");
@@ -106,5 +117,42 @@ void ExampleLayer::OnUIRender() {
 
     }
 
-	ImGui::End();
+    ImGui::End();
+
+#pragma endregion
+#pragma region Test2_Window
+    ImGui::Begin("Test2 Window");
+    if (m_Next && m_Prev) {
+
+        ImGui::SetCursorPosY((ImGui::GetWindowContentRegionMax().y / 2 - m_CheckerBoardSize / 2));
+
+        ImGui::SetCursorPosX((ImGui::GetWindowContentRegionMax().x / 2  - m_CheckerBoardSize / 2));
+
+
+        if (ImGui::ImageButton((ImTextureID)m_Prev->GetRendererID(), ImVec2(20, 20), ImVec2(0, 0), ImVec2(1, 1)))
+        {
+            nextImg(-1);
+			std::cout << "Prev button clicked\n";
+        }
+
+		ImGui::SameLine();
+        
+        if (ImGui::ImageButton((ImTextureID)m_TextureList[m_ListID]->GetRendererID(), ImVec2(m_CheckerBoardSize, m_CheckerBoardSize))) 
+        {
+
+        }
+
+        ImGui::SameLine();
+
+        if (ImGui::ImageButton((ImTextureID)m_Next->GetRendererID(), ImVec2(20, 20)))
+        {
+            nextImg(1);
+            std::cout << "Next button clicked\n";
+        }
+        ImGui::SameLine();
+
+    }
+    ImGui::End();
+#pragma endregion
+
 }
