@@ -27,6 +27,7 @@ project "Editor"
 		"%{IncludeDir.Glad}",
 		"%{IncludeDir.glm}",
         "%{IncludeDir.ImGui}",
+        "%{IncludeDir.AsyncLogger}",
    }
 
    defines
@@ -40,6 +41,7 @@ project "Editor"
         "ImGui",
         "GLFW",
         "Glad",
+        "AsyncLogger"
    }
 
    buildoptions { "/utf-8" }

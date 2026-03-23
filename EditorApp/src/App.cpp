@@ -51,6 +51,14 @@ void ExampleLayer::onAttach()
 	m_TextureList.emplace_back(Texture2D::Load("assets/1.png"));
 	m_TextureList.emplace_back(Texture2D::Load("assets/2.png"));
 	m_TextureList.emplace_back(Texture2D::Load("assets/3.png"));
+	m_TextureList.emplace_back(Texture2D::Load("assets/4.png"));//Error test
+
+
+    for (int i = 0; i < m_TextureList.size(); i++) {
+        if (!m_TextureList[i]->IsLoaded()) {
+			m_TextureList.erase(m_TextureList.begin() + i);
+        }
+    }
 }
 
 void ExampleLayer::OnUIRender() {
@@ -132,7 +140,8 @@ void ExampleLayer::OnUIRender() {
         if (ImGui::ImageButton((ImTextureID)m_Prev->GetRendererID(), ImVec2(20, 20), ImVec2(0, 0), ImVec2(1, 1)))
         {
             nextImg(-1);
-			std::cout << "Prev button clicked\n";
+			//std::cout << "Prev button clicked\n";
+			Log::GetClientLogger()->Info("Prev button clicked");
         }
 
 		ImGui::SameLine();
@@ -147,9 +156,9 @@ void ExampleLayer::OnUIRender() {
         if (ImGui::ImageButton((ImTextureID)m_Next->GetRendererID(), ImVec2(20, 20)))
         {
             nextImg(1);
-            std::cout << "Next button clicked\n";
+            //std::cout << "Next button clicked\n";
+            Log::GetClientLogger()->Info("Prev button clicked");
         }
-        ImGui::SameLine();
 
     }
     ImGui::End();

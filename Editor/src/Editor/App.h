@@ -4,6 +4,7 @@
 
 #include "Window.h"
 #include "Layer.h"
+#include "Log.h"
 
 
 struct GLFWwindow;

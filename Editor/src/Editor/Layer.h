@@ -1,5 +1,5 @@
 #pragma once
-
+#include "Editor/Log.h"
 
 namespace Editor
 {

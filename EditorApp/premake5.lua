@@ -18,7 +18,13 @@ project "EditorApp"
 	includedirs
 	{
 		"%{wks.location}/Editor/src",
-		"%{wks.location}/Editor/vendor"
+		"%{wks.location}/Editor/vendor",
+		"%{wks.location}/Editor/vendor/stb_image",
+		"%{wks.location}/Editor/vendor/glm",
+		"%{wks.location}/Editor/vendor/Imgui",
+		"%{wks.location}/Editor/vendor/AsyncLogger/AsyncLogger",
+		"%{wks.location}/Editor/vendor/GLFW/include",
+		"%{wks.location}/Editor/vendor/Glad/include"
 	}
 
 	links

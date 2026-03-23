@@ -9,6 +9,7 @@ namespace Editor {
 
 	int Main(int argc, char** argv)
 	{
+		Log::Init();
 		auto app = Editor::CreateApplication();
 		app->Run();
 		delete app;

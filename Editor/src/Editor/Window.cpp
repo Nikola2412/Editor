@@ -57,7 +57,8 @@ namespace Editor {
 			exit(-1);
 		}
 
-		std::cout << spec.Title << '\n';
+		//std::cout << spec.Title << '\n';
+		Log::GetCoreLogger()->Info(spec.Title + " created");
 
 	}
 
@@ -73,7 +74,8 @@ namespace Editor {
 		if (GLFWWindowCount == 0)
 		{
 			glfwTerminate();
-			std::cout << "Terminating GLFW\n";
+			//std::cout << "Terminating GLFW\n";
+			Log::GetCoreLogger()->Info("Terminating GLFW");
 		}
 	}
 

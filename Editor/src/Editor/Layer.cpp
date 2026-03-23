@@ -16,7 +16,8 @@ namespace Editor
 {
 	void Layer::OnAttach()
 	{
-		std::cout << "Layer: " << this->GetName() << " attached" << '\n';
+		//std::cout << "Layer: " << this->GetName() << " attached" << '\n';
+		Log::GetCoreLogger()->Info("Layer: " + this->GetName() + " attached");
 		
 		// Setup Dear ImGui context
 		IMGUI_CHECKVERSION();
@@ -66,8 +67,8 @@ namespace Editor
 	}
 	void Layer::OnDetach()
 	{
-		std::cout << "Layer: " << this->GetName() << " detached"<<'\n';
-
+		//std::cout << "Layer: " << this->GetName() << " detached"<<'\n';
+		Log::GetCoreLogger()->Info("Layer: " + this->GetName() + " detached");
 		// Cleanup ImGui
 		ImGui_ImplOpenGL3_Shutdown();
 		ImGui_ImplGlfw_Shutdown();

@@ -51,6 +51,18 @@
     <ClInclude Include="src\Editor\Layer.h">
       <Filter>src\Editor</Filter>
     </ClInclude>
+    <ClInclude Include="src\Editor\Log.h">
+      <Filter>src\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Editor\OpenGLTexture2D.h">
+      <Filter>src\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Editor\RendererAPI.h">
+      <Filter>src\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Editor\Texture.h">
+      <Filter>src\Editor</Filter>
+    </ClInclude>
     <ClInclude Include="src\Editor\Window.h">
       <Filter>src\Editor</Filter>
     </ClInclude>
@@ -1314,9 +1326,6 @@
     <ClInclude Include="vendor\glm\glm\vector_relational.hpp">
       <Filter>vendor\glm\glm</Filter>
     </ClInclude>
-    <ClInclude Include="src\Editor\Texture.h" />
-    <ClInclude Include="src\Editor\RendererAPI.h" />
-    <ClInclude Include="src\Editor\OpenGLTexture2D.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Editor\App.cpp">
@@ -1325,17 +1334,26 @@
     <ClCompile Include="src\Editor\ImGui\imGuiBuild.cpp">
       <Filter>src\Editor\ImGui</Filter>
     </ClCompile>
+    <ClCompile Include="src\Editor\Layer.cpp">
+      <Filter>src\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Editor\Log.cpp">
+      <Filter>src\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Editor\OpenGLTexture2D.cpp">
+      <Filter>src\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Editor\RendererAPI.cpp">
+      <Filter>src\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Editor\Texture.cpp">
+      <Filter>src\Editor</Filter>
+    </ClCompile>
     <ClCompile Include="src\Editor\Window.cpp">
       <Filter>src\Editor</Filter>
     </ClCompile>
     <ClCompile Include="src\pch.cpp">
       <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Editor\Texture.cpp" />
-    <ClCompile Include="src\Editor\RendererAPI.cpp" />
-    <ClCompile Include="src\Editor\OpenGLTexture2D.cpp" />
-    <ClCompile Include="src\Editor\Layer.cpp">
-      <Filter>src\Editor</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

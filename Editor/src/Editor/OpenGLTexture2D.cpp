@@ -3,6 +3,7 @@
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
+#include "Log.h"
 
 namespace Editor {
 	namespace Utils {
@@ -59,7 +60,8 @@ namespace Editor {
 		if (data)
 		{
 			isLoaded = true;
-
+			Log::GetCoreLogger()->Info("Loaded texture from path: " + path);
+			
 			this->width = width;
 			this->height = height;
 
@@ -92,6 +94,12 @@ namespace Editor {
 			glTextureSubImage2D(rendererID, 0, 0, 0, width, height, dataFormat, GL_UNSIGNED_BYTE, data);
 
 			stbi_image_free(data);
+		}
+		else
+		{
+			Log::GetCoreLogger()->Error("Failed to load texture from path: " +  path);
+			//ASSERT(false, "Failed to load texture!");
+			isLoaded = false;
 		}
 	}
 
