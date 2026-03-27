@@ -10,11 +10,11 @@ namespace Editor
 	{
 	public:
 		static void Init();
-		inline static Scope<AsyncLogger>& GetCoreLogger() { return coreLogger; }
-		inline static Scope<AsyncLogger>& GetClientLogger() { return clientLogger; }
+		inline static Ref<AsyncLogger>& GetCoreLogger() { return coreLogger; }
+		inline static Ref<AsyncLogger>& GetClientLogger() { return clientLogger; }
 	private:
-		static Scope<AsyncLogger> coreLogger;
-		static Scope<AsyncLogger> clientLogger;
+		static Ref<AsyncLogger> coreLogger;
+		static Ref<AsyncLogger> clientLogger;
 	};
 
 }

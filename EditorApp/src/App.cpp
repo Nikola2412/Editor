@@ -157,7 +157,7 @@ void ExampleLayer::OnUIRender() {
         {
             nextImg(1);
             //std::cout << "Next button clicked\n";
-            Log::GetClientLogger()->Info("Prev button clicked");
+            Log::GetClientLogger()->Info("Next button clicked");
         }
 
     }
