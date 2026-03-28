@@ -8,13 +8,21 @@ namespace Editor
 
 	void Log::Init()
 	{
-		coreLogger = CreateRef<AsyncConsoleLogger>("Editor");
 #ifdef DEBUG
-		std::vector<Ref<AsyncLogger>> v;
-		v.emplace_back(CreateRef<AsyncFileLogger>());
-		v.emplace_back(CreateRef<AsyncConsoleLogger>());
-		clientLogger = CreateRef<AsyncLogger>(v, "App");
+		{
+			std::vector<Ref<AsyncLogger>>v1;
+			v1.emplace_back(CreateRef<AsyncFileLogger>("Core", "CoreLogger.txt"));
+			v1.emplace_back(CreateRef<AsyncConsoleLogger>("Core"));
+			coreLogger = CreateRef<AsyncLogger>(v1, "Core");
+		}
+		{
+			std::vector<Ref<AsyncLogger>> v2;
+			v2.emplace_back(CreateRef<AsyncFileLogger>("App", "AppLogger.txt"));
+			v2.emplace_back(CreateRef<AsyncConsoleLogger>("App"));
+			clientLogger = CreateRef<AsyncLogger>(v2, "App");
+		}
 #else
+		coreLogger = CreateRef<AsyncConsoleLogger>("Editor");
 		clientLogger = CreateRef<AsyncConsoleLogger>("App");
 #endif // DEBUG
 		

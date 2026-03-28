@@ -1,0 +1,4 @@
+[App] [2026-03-28 19:33:21] [INFO] Next button clicked
+[App] [2026-03-28 19:33:21] [INFO] Next button clicked
+[App] [2026-03-28 19:33:21] [INFO] Next button clicked
+[App] [2026-03-28 19:33:22] [INFO] Next button clicked
