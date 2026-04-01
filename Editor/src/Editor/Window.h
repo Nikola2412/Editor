@@ -12,10 +12,15 @@ namespace Editor {
 
 		bool VSync;
 
-		WindowProps(const std::string& title = "Piranha Engine",
+		WindowProps(const std::string& title = "Editor",
 			uint32_t width = 1600,
 			uint32_t height = 900,
 			bool VSync = true) : Title(title), Width(width), Height(height), VSync(VSync) {
+		}
+
+		operator std::string() const
+		{
+			return Title + " (" + std::to_string(Width) + "x" + std::to_string(Height) + ")";
 		}
 	};
 

@@ -5,6 +5,8 @@
 #include "Window.h"
 #include "Layer.h"
 #include "Log.h"
+#include "Time.h"
+#include "Timestep.h"
 
 
 struct GLFWwindow;
@@ -66,9 +68,10 @@ namespace Editor
 		ApplicationSpecification m_Spec;
 		Window* m_WindowHandle;
 		bool m_Running = true;
+		float lastFrameTime = 0.0f;
 
 		std::vector<std::shared_ptr<Layer>> m_LayerStack;
-		std::function<void()> m_UICallback; //needs imgui
+		std::function<void()> m_UICallback;
 
 	private:
 		static Application* Instance;

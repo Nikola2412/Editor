@@ -17,7 +17,13 @@ namespace Editor
 	{
 		while (m_Running)
 		{
-			layer->OnUpdate();
+			{
+				float time = Time::GetTime();
+				Timestep timestep = time - lastFrameTime;
+				lastFrameTime = time;
+
+				layer->OnUpdate(timestep);
+			}
 
 			layer->Begin();
 			{

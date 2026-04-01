@@ -12,3 +12,5 @@ bin-int/
 # Exclude
 !vendor/bin
 *imgui.ini
+/Editor/Editor.vcxproj
+/Editor/Editor.vcxproj.filters

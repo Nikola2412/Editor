@@ -20,7 +20,7 @@ namespace Editor
 		void Begin();
 		void End();
 
-		virtual void OnUpdate(float deltaTime = 0); //not sure if this is needed. this is more for game logic
+		virtual void OnUpdate(float deltaTime = 0);
 
 		void dockSpace(); // maybe make virtual
 		void UICallBackRender();
