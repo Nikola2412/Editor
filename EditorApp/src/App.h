@@ -1,4 +1,6 @@
 #pragma once
+#include "../resource.h"
+
 #include <Editor.h>
 
 #include <imgui/imgui.h>

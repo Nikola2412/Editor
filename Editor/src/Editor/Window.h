@@ -33,6 +33,8 @@ namespace Editor {
 		uint32_t GetWidth() const { return m_Data.Width; }
 		uint32_t GetHeight() const { return m_Data.Height; }
 
+		bool isMinimized() const { return minimized; }
+
 		void Update();
 
 		void Resize(uint32_t w,uint32_t h);
@@ -46,6 +48,7 @@ namespace Editor {
 	private:
 		GLFWwindow* m_Window;
 		WindowProps m_Data;
+		bool minimized = false;
 	};
 
 }

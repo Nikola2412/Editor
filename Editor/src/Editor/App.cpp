@@ -17,22 +17,24 @@ namespace Editor
 	{
 		while (m_Running)
 		{
-			{
-				float time = Time::GetTime();
-				Timestep timestep = time - lastFrameTime;
-				lastFrameTime = time;
 
-				layer->OnUpdate(timestep);
+
+			float time = Time::GetTime();
+			Timestep timestep = time - lastFrameTime;
+			lastFrameTime = time;
+
+			if (glfwGetWindowAttrib(static_cast<GLFWwindow*>(m_WindowHandle->GetNativeWindow()), GLFW_FOCUSED) && !m_WindowHandle->isMinimized()) {
+
+				{
+					layer->OnUpdate(timestep);
+					layer->Begin();
+					layer->dockSpace();
+					layer->UICallBackRender();
+					layer->OnUIRender();
+				}
+
+				layer->End();
 			}
-
-			layer->Begin();
-			{
-				layer->dockSpace();
-				layer->UICallBackRender();
-				layer->OnUIRender();
-			}
-			layer->End();
-
 			m_WindowHandle->Update();
 		}
 		layer->OnDetach();

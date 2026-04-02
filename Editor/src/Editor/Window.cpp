@@ -90,11 +90,13 @@ namespace Editor {
 		m_Data.Width = w;
 		m_Data.Height = h;
 
+		minimized = (w == 0 || h == 0);
+
 		glViewport(0, 0, m_Data.Width, m_Data.Height);
 	}
 	void Window::SetVSync(bool enabled)
 	{
-		glfwSwapInterval(enabled ? 1 : 0);
+		//glfwSwapInterval(enabled ? 1 : 0);
 
 		m_Data.VSync = enabled;
 	}
