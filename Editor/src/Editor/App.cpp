@@ -23,16 +23,14 @@ namespace Editor
 			Timestep timestep = time - lastFrameTime;
 			lastFrameTime = time;
 
-			if (glfwGetWindowAttrib(static_cast<GLFWwindow*>(m_WindowHandle->GetNativeWindow()), GLFW_FOCUSED) && !m_WindowHandle->isMinimized()) {
-
-				{
-					layer->OnUpdate(timestep);
-					layer->Begin();
-					layer->dockSpace();
-					layer->UICallBackRender();
-					layer->OnUIRender();
-				}
-
+			//if (glfwGetWindowAttrib(static_cast<GLFWwindow*>(m_WindowHandle->GetNativeWindow()), GLFW_FOCUSED) && !m_WindowHandle->isMinimized())
+			if (!m_WindowHandle->isMinimized()) 
+			{
+				layer->OnUpdate(timestep);
+				layer->Begin();
+				layer->dockSpace();
+				layer->UICallBackRender();
+				layer->OnUIRender();
 				layer->End();
 			}
 			m_WindowHandle->Update();

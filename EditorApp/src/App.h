@@ -23,7 +23,8 @@ private:
 	Ref<Texture2D> m_CheckerBoard;
 	Ref<Texture2D> m_Next;
 	Ref<Texture2D> m_Prev;
-	std::vector<Ref<Texture2D>> m_TextureList;
+	vec<Ref<Texture2D>> m_TextureList;
+
 	unsigned int m_CheckerBoardSize;
 
 	unsigned int m_ListID = 0;

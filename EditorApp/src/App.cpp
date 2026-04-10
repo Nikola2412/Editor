@@ -53,12 +53,6 @@ void ExampleLayer::onAttach()
 	m_TextureList.emplace_back(Texture2D::Load("assets/3.png"));
 	m_TextureList.emplace_back(Texture2D::Load("assets/4.png"));//Error test
 
-
-    for (int i = 0; i < m_TextureList.size(); i++) {
-        if (!m_TextureList[i]->IsLoaded()) {
-			m_TextureList.erase(m_TextureList.begin() + i);
-        }
-    }
 }
 
 void ExampleLayer::OnUIRender() {
@@ -68,16 +62,31 @@ void ExampleLayer::OnUIRender() {
 
     if (m_CheckerBoard)
     {
-        if (ImGui::ImageButton((ImTextureID)m_CheckerBoard->GetRendererID(), ImVec2(m_CheckerBoardSize, m_CheckerBoardSize)))
-        {
-            ImGui::OpenPopup("TextureSettings");
-        }
+        ImVec2 size = ImVec2(m_CheckerBoardSize, m_CheckerBoardSize);
+        ImVec2 pos = ImGui::GetCursorScreenPos();
 
-        // Tooltip when hovering over image
+        ImGui::InvisibleButton("imgbtn", size);
+
+        ImDrawList* draw = ImGui::GetWindowDrawList();
+        float rounding = 10.0f;
+
+        // Draw rounded image manually
+        draw->AddImageRounded(
+            (ImTextureID)m_CheckerBoard->GetRendererID(),
+            pos,
+            ImVec2(pos.x + size.x, pos.y + size.y),
+            ImVec2(0, 0),
+            ImVec2(1, 1),
+            IM_COL32_WHITE,
+            rounding
+        );
+
+        // Interaction
+        if (ImGui::IsItemClicked())
+            ImGui::OpenPopup("TextureSettings");
+
         if (ImGui::IsItemHovered())
-        {
             ImGui::SetTooltip("Click to open texture settings.");
-        }
 
         // Popup for Texture Settings
         if (ImGui::BeginPopup("TextureSettings"))
@@ -146,10 +155,25 @@ void ExampleLayer::OnUIRender() {
 
 		ImGui::SameLine();
         
-        if (ImGui::ImageButton((ImTextureID)m_TextureList[m_ListID]->GetRendererID(), ImVec2(m_CheckerBoardSize, m_CheckerBoardSize))) 
-        {
+        ImVec2 size = ImVec2(m_CheckerBoardSize, m_CheckerBoardSize);
+        ImVec2 pos = ImGui::GetCursorScreenPos();
 
-        }
+        ImGui::InvisibleButton("imgbtn", size);
+
+        ImDrawList* draw = ImGui::GetWindowDrawList();
+        float rounding = 10.0f;
+
+        draw->AddImageRounded(
+            (ImTextureID)m_TextureList[m_ListID]->GetRendererID(),
+            pos,
+            ImVec2(pos.x + size.x, pos.y + size.y),
+            ImVec2(0, 0),
+            ImVec2(1, 1),
+            IM_COL32_WHITE,
+            rounding
+        );
+
+       
 
         ImGui::SameLine();
 

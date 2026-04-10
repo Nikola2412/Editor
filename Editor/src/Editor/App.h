@@ -7,6 +7,7 @@
 #include "Log.h"
 #include "Time.h"
 #include "Timestep.h"
+#include "vec.h"
 
 
 struct GLFWwindow;
