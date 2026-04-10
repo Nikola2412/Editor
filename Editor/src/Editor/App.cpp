@@ -18,13 +18,12 @@ namespace Editor
 		while (m_Running)
 		{
 
-
 			float time = Time::GetTime();
 			Timestep timestep = time - lastFrameTime;
-			lastFrameTime = time;
+			if (glfwGetWindowAttrib(static_cast<GLFWwindow*>(m_WindowHandle->GetNativeWindow()), GLFW_FOCUSED))
+				lastFrameTime = time;
 
-			//if (glfwGetWindowAttrib(static_cast<GLFWwindow*>(m_WindowHandle->GetNativeWindow()), GLFW_FOCUSED) && !m_WindowHandle->isMinimized())
-			if (!m_WindowHandle->isMinimized()) 
+			if (timestep < 10 && !m_WindowHandle->isMinimized())
 			{
 				layer->OnUpdate(timestep);
 				layer->Begin();
