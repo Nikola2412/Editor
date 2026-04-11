@@ -7,6 +7,7 @@
 [submodule "Editor/vendor/imgui"]
 	path = Editor/vendor/imgui
 	url = https://github.com/Nikola2412/imgui.git
+	branch = docking
 [submodule "Editor/vendor/AsyncLogger"]
 	path = Editor/vendor/AsyncLogger
 	url = https://github.com/Nikola2412/AsyncLogger.git
