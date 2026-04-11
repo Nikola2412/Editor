@@ -6,7 +6,7 @@
 	url = https://github.com/g-truc/glm
 [submodule "Editor/vendor/imgui"]
 	path = Editor/vendor/imgui
-	url = https://github.com/TheCherno/imgui
+	url = https://github.com/Nikola2412/imgui.git
 [submodule "Editor/vendor/AsyncLogger"]
 	path = Editor/vendor/AsyncLogger
 	url = https://github.com/Nikola2412/AsyncLogger.git

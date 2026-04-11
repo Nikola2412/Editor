@@ -40,7 +40,7 @@ void menuUI(Editor::Application* app)
 void ExampleLayer::onAttach()
 {
 	m_CheckerBoard = Texture2D::Load("assets/Checkerboard.png");
-    m_CheckerBoardSize = 256;
+    m_CheckerBoardSize = 256 * 2;
 
     m_Next = Texture2D::Load("assets/next.png");
     m_Prev = Texture2D::Load("assets/prev.png");
@@ -57,7 +57,6 @@ void ExampleLayer::onAttach()
 
 void ExampleLayer::OnUIRender() {
 #pragma region Test_Window
-
     ImGui::Begin("Test Window");
 
     if (m_CheckerBoard)
@@ -80,58 +79,10 @@ void ExampleLayer::OnUIRender() {
             IM_COL32_WHITE,
             rounding
         );
-
-        // Interaction
-        if (ImGui::IsItemClicked())
-            ImGui::OpenPopup("TextureSettings");
-
-        if (ImGui::IsItemHovered())
-            ImGui::SetTooltip("Click to open texture settings.");
-
-        // Popup for Texture Settings
-        if (ImGui::BeginPopup("TextureSettings"))
-        {
-            ImGui::Text("Texture Properties:");
-
-            // Example sliders to manipulate texture properties (assuming these are set somewhere in the texture class)
-            static float textureScale = 5.0f;
-            ImGui::SliderFloat("Scale", &textureScale, 1.0f, 10.0f, "x%.2f");
-
-            m_CheckerBoardSize = textureScale * 256 / 5.0f;
-
-            /* Not implemented
-            static float textureRotation = 0.0f;
-            ImGui::SliderFloat("Rotation", &textureRotation, 0.0f, 360.0f, "%.1f deg");
-
-            static bool invertColors = false;
-            ImGui::Checkbox("Invert Colors", &invertColors);
-            */
-
-            // Apply button for texture properties
-            if (ImGui::Button("Reset Changes"))
-            {
-                textureScale = 5.0f;
-            }
-
-            ImGui::EndPopup();
-        }
     }
     else
     {
         ImGui::Text("Error: Checkerboard texture not loaded!");
-    }
-
-    // Example for some general UI elements like a checkbox and a slider
-    static bool enableFeatureX = false;
-    ImGui::Checkbox("Enable Feature X", &enableFeatureX);
-
-    static int featureSlider = 50;
-    ImGui::SliderInt("Feature Slider", &featureSlider, 0, 100);
-
-    // Buttons that trigger events
-    if (ImGui::Button("Reset Settings"))
-    {
-
     }
 
     ImGui::End();
@@ -146,7 +97,7 @@ void ExampleLayer::OnUIRender() {
         ImGui::SetCursorPosX((ImGui::GetWindowContentRegionMax().x / 2  - m_CheckerBoardSize / 2));
 
 
-        if (ImGui::ImageButton((ImTextureID)m_Prev->GetRendererID(), ImVec2(20, 20), ImVec2(0, 0), ImVec2(1, 1)))
+        if (ImGui::ImageButton("prev", (ImTextureID)m_Prev->GetRendererID(), ImVec2(20, 20), ImVec2(0, 0), ImVec2(1, 1)))
         {
             nextImg(-1);
 			//std::cout << "Prev button clicked\n";
@@ -172,12 +123,15 @@ void ExampleLayer::OnUIRender() {
             IM_COL32_WHITE,
             rounding
         );
+        
 
+        if (ImGui::IsItemHovered())
+            ImGui::SetTooltip("Click");
        
 
         ImGui::SameLine();
 
-        if (ImGui::ImageButton((ImTextureID)m_Next->GetRendererID(), ImVec2(20, 20)))
+        if (ImGui::ImageButton("next",(ImTextureID)m_Next->GetRendererID(), ImVec2(20, 20)))
         {
             nextImg(1);
             //std::cout << "Next button clicked\n";
