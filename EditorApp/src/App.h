@@ -25,7 +25,7 @@ private:
 	Ref<Texture2D> m_Prev;
 	vec<Ref<Texture2D>> m_TextureList;
 
-	unsigned int m_CheckerBoardSize;
+	float m_CheckerBoardSize;
 
 	unsigned int m_ListID = 0;
 };
