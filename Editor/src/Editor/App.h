@@ -8,6 +8,7 @@
 #include "Time.h"
 #include "Timestep.h"
 #include "vec.h"
+#include "FileDialog.h"
 
 
 struct GLFWwindow;
@@ -56,6 +57,8 @@ namespace Editor
 			this->layer = layer;
 			this->layer->OnAttach();
 		}
+
+		Ref<Layer> GetLayer() { return layer; };
 
 		void Close();
 

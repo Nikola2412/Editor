@@ -47,7 +47,7 @@ namespace Editor
 			style.GrabRounding = 6.0f;
 
 			style.WindowPadding = ImVec2(10.0f, 10.0f);
-			style.FramePadding = ImVec2(8.0f, 6.0f);
+			style.FramePadding = ImVec2(10.0f, 6.0f);
 			style.ItemSpacing = ImVec2(10.0f, 8.0f);
 
 			style.ScrollbarSize = 12.0f;
@@ -93,6 +93,12 @@ namespace Editor
 			colors[ImGuiCol_ScrollbarGrab] = ImVec4(0.20f, 0.22f, 0.27f, 0.8f);
 			colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4(0.30f, 0.35f, 0.45f, 0.9f);
 			colors[ImGuiCol_ScrollbarGrabActive] = ImVec4(0.35f, 0.40f, 0.50f, 1.0f);
+
+			colors[ImGuiCol_Button] = ImVec4(0.20f, 0.25f, 0.35f, 1.00f);
+			colors[ImGuiCol_ButtonHovered] = ImVec4(0.30f, 0.35f, 0.50f, 1.00f);
+			colors[ImGuiCol_ButtonActive] = ImVec4(0.25f, 0.30f, 0.45f, 1.00f);
+			colors[ImGuiCol_Header] = ImVec4(0.20f, 0.30f, 0.45f, 1.00f);
+			colors[ImGuiCol_HeaderHovered] = ImVec4(0.30f, 0.40f, 0.60f, 1.00f);
 		}
 
 		Application& app = Application::Get();

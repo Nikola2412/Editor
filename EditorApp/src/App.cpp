@@ -31,6 +31,17 @@ void menuUI(Editor::Application* app)
 		{
 			app->Close();
 		}
+        if (ImGui::MenuItem("Add")) {
+            std::string s;
+            if (FileDialog::OpenFile("Image Files (*.png)\0*.png;", s)) {
+                Log::GetCoreLogger()->Info("Selected file: " + s);
+                ((ExampleLayer*)app->layer.get())->AddTexture(s);
+            }
+            else
+            {
+                Log::GetCoreLogger()->Warn("File dialog was canceled or an error occurred.");
+            }
+        }
 		ImGui::EndMenuBar();
 	}
 
@@ -45,7 +56,7 @@ void ExampleLayer::onAttach()
     m_Next = Texture2D::Load("assets/next.png");
     m_Prev = Texture2D::Load("assets/prev.png");
 
-	m_TextureList.reserve(4);
+	//m_TextureList.reserve(10);
 
 	m_TextureList.emplace_back(Texture2D::Load("assets/0.png"));
 	m_TextureList.emplace_back(Texture2D::Load("assets/1.png"));
@@ -100,8 +111,8 @@ void ExampleLayer::OnUIRender() {
         if (ImGui::ImageButton("prev", (ImTextureID)m_Prev->GetRendererID(), ImVec2(20, 20), ImVec2(0, 0), ImVec2(1, 1)))
         {
             nextImg(-1);
-			//std::cout << "Prev button clicked\n";
 			Log::GetClientLogger()->Info("Prev button clicked");
+			Log::GetClientLogger()->Info("Current List ID: " + std::to_string(this->m_ListID) + " / " + std::to_string(m_TextureList.size() - 1));
         }
 
 		ImGui::SameLine();
@@ -127,6 +138,18 @@ void ExampleLayer::OnUIRender() {
 
         if (ImGui::IsItemHovered())
             ImGui::SetTooltip("Click");
+
+        if (ImGui::IsItemClicked()) {
+            std::string s;
+            if (FileDialog::OpenFile("Image Files (*.png)\0*.png;", s)) {
+                Log::GetCoreLogger()->Info("Selected file: " + s);
+                AddTexture(s);
+            }
+            else
+            {
+                Log::GetCoreLogger()->Warn("File dialog was canceled or an error occurred.");
+            }
+        }
        
 
         ImGui::SameLine();
@@ -134,8 +157,8 @@ void ExampleLayer::OnUIRender() {
         if (ImGui::ImageButton("next",(ImTextureID)m_Next->GetRendererID(), ImVec2(20, 20)))
         {
             nextImg(1);
-            //std::cout << "Next button clicked\n";
             Log::GetClientLogger()->Info("Next button clicked");
+            Log::GetClientLogger()->Info("Current List ID: " + std::to_string(this->m_ListID) + " / " + std::to_string(m_TextureList.size() - 1));
         }
 
     }

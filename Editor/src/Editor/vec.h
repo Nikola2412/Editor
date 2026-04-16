@@ -24,6 +24,7 @@ namespace Editor
 		T& operator[](size_t index) { return data[index]; }
 		const T& operator[](size_t index) const { return data[index]; }
 		size_t size() const { return data.size(); }
+		operator size_t() const { return data.size(); }
 
 		void reserve(size_t new_capacity) { data.reserve(new_capacity); }
 		void resize(size_t new_size) { data.resize(new_size); }
