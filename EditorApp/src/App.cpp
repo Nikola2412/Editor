@@ -32,17 +32,17 @@ void menuUI(Editor::Application* app)
 		{
 			app->Close();
 		}
-        if (ImGui::MenuItem("Add")) {
-            std::string s;
-            if (FileDialog::OpenFile("Image Files (*.png)\0*.png;", s)) {
-                Log::GetCoreLogger()->Info("Selected file: " + s);
-                ((ExampleLayer*)app->layer.get())->AddTexture(s);
-            }
-            else
-            {
-                Log::GetCoreLogger()->Warn("File dialog was canceled or an error occurred.");
-            }
-        }
+		if (ImGui::MenuItem("Add")) {
+			std::string s;
+			if (FileDialog::OpenFile("Image Files (*.png)\0*.png;", s)) {
+				Log::GetCoreLogger()->Info("Selected file: " + s);
+				((ExampleLayer*)app->layer.get())->AddTexture(s);
+			}
+			else
+			{
+				Log::GetCoreLogger()->Warn("File dialog was canceled or an error occurred.");
+			}
+		}
 		ImGui::EndMenuBar();
 	}
 
@@ -51,11 +51,10 @@ void menuUI(Editor::Application* app)
 
 void ExampleLayer::onAttach()
 {
-	m_CheckerBoard = Texture2D::Load("assets/Checkerboard.png");
-    m_CheckerBoardSize = 256 * 2;
+	m_ImgSize = 256 * 2;
 
-    m_Next = Texture2D::Load("assets/next.png");
-    m_Prev = Texture2D::Load("assets/prev.png");
+	m_Next = Texture2D::Load("assets/next.png");
+	m_Prev = Texture2D::Load("assets/prev.png");
 
 	//m_TextureList.reserve(10);
 
@@ -68,101 +67,124 @@ void ExampleLayer::onAttach()
 }
 
 void ExampleLayer::OnUIRender() {
-#pragma region Test_Window
-    ImGui::Begin("Test Window");
+	//ImGui::Begin("Test Window");
+	//ImVec2 size = ImVec2(m_ImgSize, m_ImgSize);
+	//ImVec2 pos = ImGui::GetCursorScreenPos();
 
-    if (m_CheckerBoard)
-    {
-        ImVec2 size = ImVec2(m_CheckerBoardSize, m_CheckerBoardSize);
-        ImVec2 pos = ImGui::GetCursorScreenPos();
+	//ImGui::InvisibleButton("imgbtn", size);
 
-        ImGui::InvisibleButton("imgbtn", size);
+	//ImDrawList* draw = ImGui::GetWindowDrawList();
+	//float rounding = 10.0f;
 
-        ImDrawList* draw = ImGui::GetWindowDrawList();
-        float rounding = 10.0f;
+	//// Draw rounded image manually
+	//draw->AddImageRounded(
+	//	(ImTextureID)m_CheckerBoard->GetRendererID(),
+	//	pos,
+	//	ImVec2(pos.x + size.x, pos.y + size.y),
+	//	ImVec2(0, 0),
+	//	ImVec2(1, 1),
+	//	IM_COL32_WHITE,
+	//	rounding
+	//);
 
-        // Draw rounded image manually
-        draw->AddImageRounded(
-            (ImTextureID)m_CheckerBoard->GetRendererID(),
-            pos,
-            ImVec2(pos.x + size.x, pos.y + size.y),
-            ImVec2(0, 0),
-            ImVec2(1, 1),
-            IM_COL32_WHITE,
-            rounding
-        );
-    }
-    else
-    {
-        ImGui::Text("Error: Checkerboard texture not loaded!");
-    }
+	//ImGui::End();
 
-    ImGui::End();
 
-#pragma endregion
 #pragma region Test2_Window
     ImGui::Begin("Test2 Window");
-    if (m_Next && m_Prev) {
 
-        ImGui::SetCursorPosY((ImGui::GetWindowContentRegionMax().y / 2 - m_CheckerBoardSize / 2));
+    if (m_Next && m_Prev)
+    {
+        float btnSize = 20.0f;
+        float spacing = ImGui::GetStyle().ItemSpacing.x;
 
-        ImGui::SetCursorPosX((ImGui::GetWindowContentRegionMax().x / 2  - m_CheckerBoardSize / 2));
+        float totalWidth = btnSize + spacing + m_ImgSize + spacing + btnSize;
 
+        // Center horizontally
+        float startX = (ImGui::GetContentRegionAvail().x - totalWidth) * 0.5f;
+        if (startX > 0.0f)
+            ImGui::SetCursorPosX(ImGui::GetCursorPosX() + startX);
 
-        if (ImGui::ImageButton("prev", (ImTextureID)m_Prev->GetRendererID(), ImVec2(20, 20), ImVec2(0, 0), ImVec2(1, 1)))
+        // Center vertically (optional, cleaner way)
+        float totalHeight = m_ImgSize;
+        float startY = (ImGui::GetContentRegionAvail().y - totalHeight) * 0.5f;
+        if (startY > 0.0f)
+            ImGui::SetCursorPosY(ImGui::GetCursorPosY() + startY);
+
+        // --- Prev Button ---
+        if (ImGui::ImageButton("prev", (ImTextureID)m_Prev->GetRendererID(), ImVec2(btnSize, btnSize)))
         {
             nextImg(-1);
-			Log::GetClientLogger()->Info("Prev button clicked");
-			Log::GetClientLogger()->Info("Current List ID: " + std::to_string(this->m_ListID) + " / " + std::to_string(m_TextureList.size() - 1));
         }
 
-		ImGui::SameLine();
-        
-        ImVec2 size = ImVec2(m_CheckerBoardSize, m_CheckerBoardSize);
+        ImGui::SameLine();
+
+        // --- Image ---
+        ImVec2 size(m_ImgSize, m_ImgSize);
         ImVec2 pos = ImGui::GetCursorScreenPos();
 
         ImGui::InvisibleButton("imgbtn", size);
 
         ImDrawList* draw = ImGui::GetWindowDrawList();
-        float rounding = 10.0f;
-
         draw->AddImageRounded(
-            (ImTextureID)m_TextureList[m_ListID]->GetRendererID(),
+            !m_TextureList.empty() ? (ImTextureID)m_TextureList[m_ListID]->GetRendererID() : (ImTextureID)fallback->GetRendererID(),
             pos,
             ImVec2(pos.x + size.x, pos.y + size.y),
             ImVec2(0, 0),
             ImVec2(1, 1),
             IM_COL32_WHITE,
-            rounding
+            10.0f
         );
-        
 
         if (ImGui::IsItemHovered())
             ImGui::SetTooltip("Click");
 
-        if (ImGui::IsItemClicked()) {
-            std::string s;
-            if (FileDialog::OpenFile("Image Files (*.png)\0*.png;", s)) {
-                Log::GetCoreLogger()->Info("Selected file: " + s);
-                AddTexture(s);
-            }
-            else
-            {
-                Log::GetCoreLogger()->Warn("File dialog was canceled or an error occurred.");
-            }
-        }
-       
+        if (ImGui::IsItemClicked())
+            ImGui::OpenPopup("ImageSettings");
 
         ImGui::SameLine();
 
-        if (ImGui::ImageButton("next",(ImTextureID)m_Next->GetRendererID(), ImVec2(20, 20)))
+        // --- Next Button ---
+        if (ImGui::ImageButton("next", (ImTextureID)m_Next->GetRendererID(), ImVec2(btnSize, btnSize)))
         {
             nextImg(1);
-            Log::GetClientLogger()->Info("Next button clicked");
-            Log::GetClientLogger()->Info("Current List ID: " + std::to_string(this->m_ListID) + " / " + std::to_string(m_TextureList.size() - 1));
         }
 
+        // --- Popup ---
+        if (ImGui::BeginPopup("ImageSettings"))
+        {
+            static float brightness = 1.0f;
+            static float contrast = 1.0f;
+
+            ImGui::Text("Image Settings");
+            ImGui::SliderFloat("Brightness", &brightness, 0.0f, 2.0f);
+            ImGui::SliderFloat("Contrast", &contrast, 0.0f, 2.0f);
+            ImGui::SliderFloat("Image Size", &m_ImgSize, 128.0f, 512.0f);
+
+            if (ImGui::Button("Reset"))
+            {
+                brightness = 1.0f;
+                contrast = 1.0f;
+                m_ImgSize = 512.0f;
+            }
+
+            ImGui::Separator();
+
+            if (ImGui::Button("Delete"))
+            {
+                m_TextureList.erase(m_ListID);
+                nextImg(1);
+            }
+
+            ImGui::Separator();
+
+            if (ImGui::Button("Close"))
+                ImGui::CloseCurrentPopup();
+
+            ImGui::EndPopup();
+        }
     }
+
     ImGui::End();
 #pragma endregion
 

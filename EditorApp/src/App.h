@@ -10,7 +10,7 @@ using namespace ImGui;
 class ExampleLayer : public Layer
 {
 public:
-	ExampleLayer(const std::string& name) : Layer(name), m_CheckerBoardSize(256){};
+	ExampleLayer(const std::string& name) : Layer(name), m_ImgSize(256){};
 	~ExampleLayer() = default;
 
 	virtual void onAttach() override;
@@ -39,12 +39,12 @@ private:
 		Log::GetClientLogger()->Info(std::to_string(i) + " " + std::to_string(m_TextureList.size()) + " -> " + std::to_string(m_ListID));
 	}
 
-	Ref<Texture2D> m_CheckerBoard;
+	//Ref<Texture2D> m_CheckerBoard;
 	Ref<Texture2D> m_Next;
 	Ref<Texture2D> m_Prev;
 	vec<Ref<Texture2D>> m_TextureList;
-
-	float m_CheckerBoardSize;
+	Ref<Texture2D> fallback = Texture2D::Load("temp.png");
+	float m_ImgSize;
 
 	size_t m_ListID = 0;
 };
