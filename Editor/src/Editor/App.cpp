@@ -10,7 +10,11 @@ namespace Editor
 		ASSERT(!Instance, "Application already exists!");
 		if (Instance) exit(-1);
 		Instance = this;
-		m_WindowHandle = new Window(applicationSpecification.Name);
+		m_WindowHandle = new Window(WindowProps{
+			applicationSpecification.Name,
+			applicationSpecification.Icon
+			}
+		);
 	}
 
 	void Application::Run()

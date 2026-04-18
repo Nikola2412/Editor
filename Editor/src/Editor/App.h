@@ -10,7 +10,6 @@
 #include "vec.h"
 #include "FileDialog.h"
 
-
 struct GLFWwindow;
 
 namespace Editor
@@ -18,6 +17,7 @@ namespace Editor
 	struct ApplicationSpecification
 	{
 		std::string Name = "App";
+		std::string Icon = "icon1.png";
 	};
 
 	class Application
