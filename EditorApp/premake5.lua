@@ -1,5 +1,4 @@
 project "EditorApp"
-	kind "ConsoleApp"
 	language "C++"
 	cppdialect "C++17"
 	targetdir "bin/%{cfg.buildcfg}"
@@ -9,10 +8,19 @@ project "EditorApp"
 	targetdir ("../bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("../bin-int/" .. outputdir .. "/%{prj.name}")
 
+	postbuildcommands {
+		--'{COPYDIR} "%{wks.location}/EditorApp/imgui.ini" "%{cfg.targetdir}/imgui.ini"',
+		'{COPYDIR} "%{wks.location}/EditorApp/assets" "%{cfg.targetdir}/assets"',
+		'{COPYDIR} "%{wks.location}/EditorApp/AppAssets" "%{cfg.targetdir}/AppAssets"',
+	}
+
 	files
 	{
 		"src/**.h",
 		"src/**.cpp",
+		"EditorApp.aps",
+		"EditorApp.rc",
+		"resource.h",
 	}
 
 	includedirs
@@ -47,13 +55,16 @@ project "EditorApp"
 		defines "DEBUG"
 		runtime "Debug"
 		symbols "on"
+		kind "ConsoleApp"
 
 	filter "configurations:Release"
 		defines "RELEASE"
 		runtime "Release"
 		optimize "on"
+		kind "ConsoleApp"
 
 	filter "configurations:Dist"
 		defines "DIST"
 		runtime "Release"
 		optimize "on"
+		kind "WindowedApp"

@@ -5,7 +5,7 @@ Editor::Application* Editor::CreateApplication()
 {
 	Editor::ApplicationSpecification spec;
 	spec.Name = "Editor";
-	spec.Icon = "icon1.png";
+	spec.Icon = "AppAssets/icon1.png";
 
 	Editor::Application* app = new Editor::Application(spec);
 
