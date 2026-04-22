@@ -7,7 +7,7 @@ Editor::Application* Editor::CreateApplication()
 	spec.Icon = "AppAssets/icon1.png";
 	spec.Width = 1600;
 	spec.Height = 900;
-	spec.VSync = false;
+	spec.VSync = true;
 
 	Editor::Application* app = new Editor::Application(spec);
 
