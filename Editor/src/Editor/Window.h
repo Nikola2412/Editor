@@ -13,7 +13,7 @@ namespace Editor {
 
 		bool VSync;
 
-		WindowProps(const std::string& title = "Editor", const std::string& icon = "icon1.png",
+		WindowProps(const std::string& title = "App", const std::string& icon = "icon1.png",
 			uint32_t width = 1600,
 			uint32_t height = 900,
 			bool VSync = true) : Title(title), Icon(icon), Width(width), Height(height), VSync(VSync) {
@@ -40,7 +40,7 @@ namespace Editor {
 
 		void Resize(uint32_t w,uint32_t h);
 
-		void SetVSync(bool enable = true);
+		void SetVSync(bool interval = true);
 
 		void Init(const WindowProps& spec);
 

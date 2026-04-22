@@ -59,12 +59,13 @@ namespace Editor {
 
 		glfwMakeContextCurrent(m_Window);
 
+		int status = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
+
 		SetVSync(spec.VSync);
 
-		int status = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
 		if (!status)
 		{
-			fprintf(stderr, "Failed to initialize OpenGL context!\n");
+			Log::GetCoreLogger()->Error("Failed to initialize OpenGL context!");
 			exit(-1);
 		}
 
@@ -105,10 +106,12 @@ namespace Editor {
 
 		glViewport(0, 0, m_Data.Width, m_Data.Height);
 	}
-	void Window::SetVSync(bool enabled)
+	void Window::SetVSync(bool interval)
 	{
-		//glfwSwapInterval(enabled ? 1 : 0);
+		glfwSwapInterval(interval ? 1 : 0);
 
-		m_Data.VSync = enabled;
+		Log::GetCoreLogger()->Info("VSync: " + std::string(interval ? "Enabled" : "Disabled"));
+
+		m_Data.VSync = interval;
 	}
 }

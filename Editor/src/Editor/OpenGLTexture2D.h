@@ -18,6 +18,7 @@ namespace Editor {
 
         virtual uint32_t GetWidth() const override { return width; }
         virtual uint32_t GetHeight() const override { return height; }
+		virtual float GetRotation() const override { return rotation; }
         virtual uint32_t GetRendererID() const override { return rendererID; }
 
         virtual const std::string& GetPath() const override { return path; }
@@ -38,6 +39,7 @@ namespace Editor {
         std::string path;
         bool isLoaded = false;
         uint32_t width, height;
+		float rotation = 0.0f;
         uint32_t rendererID;
         GLenum internalFormat = 0, dataFormat = 0;
     };

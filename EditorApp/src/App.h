@@ -44,7 +44,14 @@ private:
 	Ref<Texture2D> m_Prev;
 	vec<Ref<Texture2D>> m_TextureList;
 	Ref<Texture2D> fallback = Texture2D::Load("temp.png");
-	float m_ImgSize;
+
+	float m_ImgSize = 256.0f;          // current (animated)
+	float m_TargetImgSize = 512.0f;    // desired
+	float m_SizeSpeed = 12.0f;         // smoothing strength
+
+	float m_Rotation = 0.0f;        // current (rendered)
+	float m_TargetRotation = 0.0f;  // desired
+	float m_RotationSpeed = 10.0f;  // smoothing strength
 
 	size_t m_ListID = 0;
 };

@@ -5,14 +5,17 @@ namespace Editor
 {
 	Application* Application::Instance = nullptr;
 
-	Application::Application(const ApplicationSpecification& applicationSpecification) : m_Spec(applicationSpecification)
+	Application::Application(const ApplicationSpecification& appSpec) : m_Spec(appSpec)
 	{
 		ASSERT(!Instance, "Application already exists!");
 		if (Instance) exit(-1);
 		Instance = this;
 		m_WindowHandle = new Window(WindowProps{
-			applicationSpecification.Name,
-			applicationSpecification.Icon
+			appSpec.Name,
+			appSpec.Icon,
+			appSpec.Width,
+			appSpec.Height,
+			appSpec.VSync
 			}
 		);
 	}

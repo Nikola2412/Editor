@@ -20,6 +20,7 @@ namespace Editor {
 		uint32_t Width = 1;
 		uint32_t Height = 1;
 		ImageFormat Format = ImageFormat::RGBA8;
+		float Rotation = 0.0f;
 		bool GenerateMips = true;
 	};
 
@@ -31,6 +32,7 @@ namespace Editor {
 
 		virtual uint32_t GetWidth() const = 0;
 		virtual uint32_t GetHeight() const = 0;
+		virtual float GetRotation() const = 0;
 		virtual uint32_t GetRendererID() const = 0;
 
 		virtual const std::string& GetPath() const = 0;

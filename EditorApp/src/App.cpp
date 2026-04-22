@@ -1,11 +1,13 @@
 #include "App.h"
 
-
 Editor::Application* Editor::CreateApplication()
 {
 	Editor::ApplicationSpecification spec;
 	spec.Name = "Editor";
 	spec.Icon = "AppAssets/icon1.png";
+	spec.Width = 1600;
+	spec.Height = 900;
+	spec.VSync = false;
 
 	Editor::Application* app = new Editor::Application(spec);
 
@@ -49,9 +51,11 @@ void menuUI(Editor::Application* app)
 	//ImGui::ShowDemoWindow();
 }
 
+
+
 void ExampleLayer::onAttach()
 {
-	m_ImgSize = 256 * 2;
+    m_TargetImgSize = m_ImgSize * 2;
 
 	m_Next = Texture2D::Load("assets/next.png");
 	m_Prev = Texture2D::Load("assets/prev.png");
@@ -67,34 +71,18 @@ void ExampleLayer::onAttach()
 }
 
 void ExampleLayer::OnUIRender() {
-	//ImGui::Begin("Test Window");
-	//ImVec2 size = ImVec2(m_ImgSize, m_ImgSize);
-	//ImVec2 pos = ImGui::GetCursorScreenPos();
-
-	//ImGui::InvisibleButton("imgbtn", size);
-
-	//ImDrawList* draw = ImGui::GetWindowDrawList();
-	//float rounding = 10.0f;
-
-	//// Draw rounded image manually
-	//draw->AddImageRounded(
-	//	(ImTextureID)m_CheckerBoard->GetRendererID(),
-	//	pos,
-	//	ImVec2(pos.x + size.x, pos.y + size.y),
-	//	ImVec2(0, 0),
-	//	ImVec2(1, 1),
-	//	IM_COL32_WHITE,
-	//	rounding
-	//);
-
-	//ImGui::End();
-
 
 #pragma region Test2_Window
     ImGui::Begin("Test2 Window");
 
     if (m_Next && m_Prev)
     {
+        ImTextureID tex = !m_TextureList.empty()
+            ? (ImTextureID)m_TextureList[m_ListID]->GetRendererID()
+            : (ImTextureID)fallback->GetRendererID();
+
+		AnimatedImage(m_Rotation, m_TargetRotation, m_RotationSpeed, m_ImgSize, m_TargetImgSize, m_SizeSpeed);
+
         float btnSize = 20.0f;
         float spacing = ImGui::GetStyle().ItemSpacing.x;
 
@@ -105,7 +93,7 @@ void ExampleLayer::OnUIRender() {
         if (startX > 0.0f)
             ImGui::SetCursorPosX(ImGui::GetCursorPosX() + startX);
 
-        // Center vertically (optional, cleaner way)
+        // Center vertically
         float totalHeight = m_ImgSize;
         float startY = (ImGui::GetContentRegionAvail().y - totalHeight) * 0.5f;
         if (startY > 0.0f)
@@ -116,7 +104,6 @@ void ExampleLayer::OnUIRender() {
         {
             nextImg(-1);
         }
-
         ImGui::SameLine();
 
         // --- Image ---
@@ -126,18 +113,22 @@ void ExampleLayer::OnUIRender() {
         ImGui::InvisibleButton("imgbtn", size);
 
         ImDrawList* draw = ImGui::GetWindowDrawList();
-        draw->AddImageRounded(
-            !m_TextureList.empty() ? (ImTextureID)m_TextureList[m_ListID]->GetRendererID() : (ImTextureID)fallback->GetRendererID(),
-            pos,
-            ImVec2(pos.x + size.x, pos.y + size.y),
-            ImVec2(0, 0),
-            ImVec2(1, 1),
-            IM_COL32_WHITE,
-            10.0f
-        );
+
+        // Draw rotated image
+        DrawRotatedImage(draw, tex, pos, size, m_Rotation);
+
+        // --- Mouse drag → smooth target rotation ---
+        if (ImGui::IsItemActive() && 0)
+        {
+            ImVec2 center = ImVec2(pos.x + size.x * 0.5f, pos.y + size.y * 0.5f);
+            ImVec2 mouse = ImGui::GetIO().MousePos;
+
+            float angle = atan2f(mouse.y - center.y, mouse.x - center.x);
+            m_TargetRotation = angle;
+        }
 
         if (ImGui::IsItemHovered())
-            ImGui::SetTooltip("Click");
+            ImGui::SetTooltip("Click + drag to rotate");
 
         if (ImGui::IsItemClicked())
             ImGui::OpenPopup("ImageSettings");
@@ -159,13 +150,29 @@ void ExampleLayer::OnUIRender() {
             ImGui::Text("Image Settings");
             ImGui::SliderFloat("Brightness", &brightness, 0.0f, 2.0f);
             ImGui::SliderFloat("Contrast", &contrast, 0.0f, 2.0f);
-            ImGui::SliderFloat("Image Size", &m_ImgSize, 128.0f, 512.0f);
+            ImGui::SliderFloat("Image Size", &m_TargetImgSize, 128.0f, 512.0f);
+
+            ImGui::Separator();
+
+            // --- Rotation controls (affect TARGET) ---
+            ImGui::SliderAngle("Rotation", &m_TargetRotation);
+
+            if (ImGui::Button("0°"))   m_TargetRotation = 0.0f;
+            ImGui::SameLine();
+            if (ImGui::Button("90°"))  m_TargetRotation = IM_PI * 0.5f;
+            ImGui::SameLine();
+            if (ImGui::Button("180°")) m_TargetRotation = IM_PI;
+            ImGui::SameLine();
+            if (ImGui::Button("270°")) m_TargetRotation = IM_PI * 1.5f;
+
+            ImGui::Separator();
 
             if (ImGui::Button("Reset"))
             {
                 brightness = 1.0f;
                 contrast = 1.0f;
-                m_ImgSize = 512.0f;
+                m_TargetImgSize = 512.0f;
+                m_TargetRotation = 0.0f;
             }
 
             ImGui::Separator();
