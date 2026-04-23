@@ -45,6 +45,18 @@ void menuUI(Editor::Application* app)
 				Log::GetCoreLogger()->Warn("File dialog was canceled or an error occurred.");
 			}
 		}
+        if(ImGui::MenuItem("Settings"))
+            ImGui::OpenPopup("SettingsPopup");
+        
+        if (ImGui::BeginPopup("SettingsPopup"))
+        {
+            bool* vsyncPtr = &((ExampleLayer*)app->layer.get())->vSync;
+            ImGui::Text("Settings");
+            if (ImGui::Checkbox("VSync", vsyncPtr)) {
+				app->SetVSync(*vsyncPtr);
+            }
+            ImGui::EndPopup();
+        }
 		ImGui::EndMenuBar();
 	}
 

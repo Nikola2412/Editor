@@ -61,10 +61,11 @@ namespace Editor
 			this->layer->OnAttach();
 		}
 
+		void SetVSync(bool interval) { m_WindowHandle->SetVSync(interval); };
+
 		Ref<Layer> GetLayer() { return layer; };
 
 		void Close();
-
 
 		static Application& Get() { return *Instance; };
 

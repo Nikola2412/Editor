@@ -61,7 +61,6 @@ namespace Editor {
 
 		int status = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
 
-		SetVSync(spec.VSync);
 
 		if (!status)
 		{
@@ -69,6 +68,7 @@ namespace Editor {
 			exit(-1);
 		}
 
+		SetVSync(spec.VSync);
 		//std::cout << spec.Title << '\n';
 		Log::GetCoreLogger()->Info(spec);
 

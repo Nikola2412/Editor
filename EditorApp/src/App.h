@@ -20,6 +20,9 @@ public:
 	void AddTexture(const std::string& path) {
 		m_TextureList.emplace_back(Texture2D::Load(path));
 	}
+
+	bool vSync = true;
+
 private:
 	void nextImg(int i) {
        if (m_TextureList.size() == 0)
@@ -54,6 +57,7 @@ private:
 	float m_RotationSpeed = 10.0f;  // smoothing strength
 
 	size_t m_ListID = 0;
+
 };
 
 void menuUI(Editor::Application* app);
