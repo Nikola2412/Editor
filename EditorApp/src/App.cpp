@@ -67,18 +67,17 @@ void menuUI(Editor::Application* app)
 
 void ExampleLayer::onAttach()
 {
-    m_TargetImgSize = m_ImgSize * 2;
-
 	m_Next = Texture2D::Load("assets/next.png");
 	m_Prev = Texture2D::Load("assets/prev.png");
 
 	//m_TextureList.reserve(10);
 
-	m_TextureList.emplace_back(Texture2D::Load("assets/0.png"));
-	m_TextureList.emplace_back(Texture2D::Load("assets/1.png"));
-	m_TextureList.emplace_back(Texture2D::Load("assets/2.png"));
-	m_TextureList.emplace_back(Texture2D::Load("assets/3.png"));
-	m_TextureList.emplace_back(Texture2D::Load("assets/4.png"));//Error test
+	AddTexture("assets/0.png");
+	AddTexture("assets/1.png");
+	AddTexture("assets/2.png");
+	AddTexture("assets/3.png");
+	AddTexture("assets/4.png");//Error test
+    this->setImg();
 
 }
 
@@ -89,16 +88,14 @@ void ExampleLayer::OnUIRender() {
 
     if (m_Next && m_Prev)
     {
-        ImTextureID tex = !m_TextureList.empty()
-            ? (ImTextureID)m_TextureList[m_ListID]->GetRendererID()
-            : (ImTextureID)fallback->GetRendererID();
-
-		AnimatedImage(m_Rotation, m_TargetRotation, m_RotationSpeed, m_ImgSize, m_TargetImgSize, m_SizeSpeed);
+		AnimateImageRotation(m_Rotation, m_TargetRotation, m_RotationSpeed);
+        AnimateImageSize(m_ImgWidth, m_ImgHeight, m_TargetImgWidth, m_TargetImgHeight, m_SizeSpeed);
+		//AnimatedImage(m_Rotation, m_TargetRotation, m_RotationSpeed, m_ImgSize, m_TargetImgSize, m_SizeSpeed);
 
         float btnSize = 20.0f;
         float spacing = ImGui::GetStyle().ItemSpacing.x;
 
-        float totalWidth = btnSize + spacing + m_ImgSize + spacing + btnSize;
+        float totalWidth = btnSize + spacing + m_ImgWidth + spacing + btnSize;
 
         // Center horizontally
         float startX = (ImGui::GetContentRegionAvail().x - totalWidth) * 0.5f;
@@ -106,7 +103,7 @@ void ExampleLayer::OnUIRender() {
             ImGui::SetCursorPosX(ImGui::GetCursorPosX() + startX);
 
         // Center vertically
-        float totalHeight = m_ImgSize;
+        float totalHeight = m_ImgHeight;
         float startY = (ImGui::GetContentRegionAvail().y - totalHeight) * 0.5f;
         if (startY > 0.0f)
             ImGui::SetCursorPosY(ImGui::GetCursorPosY() + startY);
@@ -119,7 +116,7 @@ void ExampleLayer::OnUIRender() {
         ImGui::SameLine();
 
         // --- Image ---
-        ImVec2 size(m_ImgSize, m_ImgSize);
+        ImVec2 size(m_ImgWidth, m_ImgHeight);
         ImVec2 pos = ImGui::GetCursorScreenPos();
 
         ImGui::InvisibleButton("imgbtn", size);
@@ -127,7 +124,7 @@ void ExampleLayer::OnUIRender() {
         ImDrawList* draw = ImGui::GetWindowDrawList();
 
         // Draw rotated image
-        DrawRotatedImage(draw, tex, pos, size, m_Rotation);
+        DrawImage(draw, tex, pos, size, m_Rotation);
 
         // --- Mouse drag → smooth target rotation ---
         if (ImGui::IsItemActive() && 0)
@@ -140,7 +137,7 @@ void ExampleLayer::OnUIRender() {
         }
 
         if (ImGui::IsItemHovered())
-            ImGui::SetTooltip("Click + drag to rotate");
+            ImGui::SetTooltip("Click");
 
         if (ImGui::IsItemClicked())
             ImGui::OpenPopup("ImageSettings");
@@ -153,20 +150,16 @@ void ExampleLayer::OnUIRender() {
             nextImg(1);
         }
 
-        // --- Popup ---
         if (ImGui::BeginPopup("ImageSettings"))
         {
-            static float brightness = 1.0f;
-            static float contrast = 1.0f;
 
             ImGui::Text("Image Settings");
-            ImGui::SliderFloat("Brightness", &brightness, 0.0f, 2.0f);
-            ImGui::SliderFloat("Contrast", &contrast, 0.0f, 2.0f);
-            ImGui::SliderFloat("Image Size", &m_TargetImgSize, 128.0f, 512.0f);
+            
+            ImGui::SliderFloat("Image Width", &m_TargetImgWidth, 128.0f, 512.0f);
+            ImGui::SliderFloat("Image Height", &m_TargetImgHeight, 128.0f, 512.0f);
 
             ImGui::Separator();
 
-            // --- Rotation controls (affect TARGET) ---
             ImGui::SliderAngle("Rotation", &m_TargetRotation);
 
             if (ImGui::Button("0°"))   m_TargetRotation = 0.0f;
@@ -181,9 +174,8 @@ void ExampleLayer::OnUIRender() {
 
             if (ImGui::Button("Reset"))
             {
-                brightness = 1.0f;
-                contrast = 1.0f;
-                m_TargetImgSize = 512.0f;
+                m_TargetImgWidth = 512.0f;
+                m_TargetImgHeight = 512.0f;
                 m_TargetRotation = 0.0f;
             }
 
@@ -192,7 +184,7 @@ void ExampleLayer::OnUIRender() {
             if (ImGui::Button("Delete"))
             {
                 m_TextureList.erase(m_ListID);
-                nextImg(1);
+                nextImg(0);
             }
 
             ImGui::Separator();

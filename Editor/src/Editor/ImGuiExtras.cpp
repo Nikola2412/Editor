@@ -3,7 +3,7 @@
 
 namespace ImGui
 {
-    void DrawRotatedImage(ImDrawList* draw, ImTextureID tex, ImVec2 pos, ImVec2 size, float angle, ImU32 tint_col)
+    void DrawImage(ImDrawList* draw, ImTextureID tex, ImVec2 pos, ImVec2 size, float angle, ImU32 tint_col)
     {
         ImVec2 center = ImVec2(pos.x + size.x * 0.5f, pos.y + size.y * 0.5f);
 
@@ -42,6 +42,14 @@ namespace ImGui
         float dt = ImGui::GetIO().DeltaTime;
         currentSize += (targetSize - currentSize) * (1.0f - expf(-sizeSpeed * dt));
     }
+
+    void AnimateImageSize(float& currentWidth, float& currentHeight, float targetWidth, float targetHeight, float sizeSpeed)
+    {
+        float dt = ImGui::GetIO().DeltaTime;
+        currentWidth += (targetWidth - currentWidth) * (1.0f - expf(-sizeSpeed * dt));
+		currentHeight += (targetHeight - currentHeight) * (1.0f - expf(-sizeSpeed * dt));
+    }
+
 
     void AnimateImageRotation(float& currentRotation, float targetRotation, float rotationSpeed)
     {
