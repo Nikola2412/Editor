@@ -8,7 +8,11 @@
 #include "App.h"
 
 namespace Editor {
+#define BAR_HEIGHT 40
 
+	int dragging = 0;
+	double dragStartX, dragStartY;
+	int winStartX, winStartY;
 	static uint8_t GLFWWindowCount = 0;
 
 	static void on_window_size_callback(GLFWwindow* window, int width, int height)
@@ -38,6 +42,7 @@ namespace Editor {
 		}
 
 		{
+			glfwWindowHint(GLFW_DECORATED, GLFW_TRUE);
 			m_Window = glfwCreateWindow((int)spec.Width, (int)spec.Height, spec.Title.c_str(), nullptr, nullptr);
 			GLFWWindowCount++;
 		}
@@ -54,10 +59,14 @@ namespace Editor {
 			stbi_image_free(images[0].pixels);
 		}
 
-		glfwSetWindowSizeCallback(m_Window, on_window_size_callback);
-		glfwSetWindowCloseCallback(m_Window, on_window_close_callback);
+		{
+			glfwSetWindowSizeCallback(m_Window, on_window_size_callback);
+			glfwSetWindowCloseCallback(m_Window, on_window_close_callback);
 
-		glfwMakeContextCurrent(m_Window);
+			glfwMakeContextCurrent(m_Window);
+
+			SetVSync(spec.VSync);
+		}
 
 		int status = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
 
@@ -68,7 +77,6 @@ namespace Editor {
 			exit(-1);
 		}
 
-		SetVSync(spec.VSync);
 		//std::cout << spec.Title << '\n';
 		Log::GetCoreLogger()->Info(spec);
 
