@@ -1,6 +1,6 @@
 [submodule "Editor/vendor/GLFW"]
 	path = Editor/vendor/GLFW
-	url = https://github.com/glfw/glfw.git
+	url = https://github.com/glfw/glfw.git	
 [submodule "Editor/vendor/glm"]
 	path = Editor/vendor/glm
 	url = https://github.com/g-truc/glm
