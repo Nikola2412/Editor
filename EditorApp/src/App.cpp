@@ -36,7 +36,7 @@ void menuUI(Editor::Application* app)
 		}
 		if (ImGui::MenuItem("Add")) {
 			std::string s;
-			if (FileDialog::OpenFile("Image Files (*.png)\0*.png;", s)) {
+			if (FileDialog::OpenFile(PNG, s)) {
 				Log::GetCoreLogger()->Info("Selected file: " + s);
 				((ExampleLayer*)app->layer.get())->AddTexture(s);
 			}

@@ -15,6 +15,17 @@ bool Editor::FileDialog::OpenFile(const char* filter, std::string& outPath)
 #endif // _WIN32
 }
 
+bool Editor::FileDialog::OpenFile(int flags, std::string& outPath)
+{
+#ifdef _WIN32
+	return WindowsFileDialog::OpenFile(flags, outPath);
+#else
+#error "FileDialog is not implemented for this platform"
+	return false;
+
+#endif // _WIN32
+}
+
 bool Editor::FileDialog::SaveFile(const char* filter, std::string& outPath)
 {
 #ifdef _WIN32
@@ -54,6 +65,33 @@ bool Editor::WindowsFileDialog::OpenFile(const char* filter, std::string& outPat
 		return true;
 	}
 	return false;
+}
+
+bool Editor::WindowsFileDialog::OpenFile(int flags, std::string& outPath)
+{
+	std::string extensions;
+
+	if (flags & PNG)
+		extensions += "*.png;";
+
+	if (flags & JPG)
+		extensions += "*.jpg;";
+
+	// Remove trailing ';'
+	if (!extensions.empty())
+		extensions.pop_back();
+
+	std::string filter;
+
+	if (!extensions.empty())
+	{
+		filter = "Image Files (" + extensions + ")";
+		filter.push_back('\0');
+		filter += extensions;
+		filter.push_back('\0');
+	}
+
+	return OpenFile(filter.c_str(), outPath);
 }
 
 bool Editor::WindowsFileDialog::SaveFile(const char* filter, std::string& outPath)
