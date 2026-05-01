@@ -1,3 +1,7 @@
+[submodule "Editor/vendor/glfw"]
+	path = Editor/vendor/glfw
+	url = https://github.com/Nikola2412/glfw.git
+	branch = master
 [submodule "Editor/vendor/glm"]
 	path = Editor/vendor/glm
 	url = https://github.com/g-truc/glm
@@ -9,7 +13,3 @@
 	path = Editor/vendor/AsyncLogger
 	url = https://github.com/Nikola2412/AsyncLogger.git
 	branch = dev
-[submodule "Editor/vendor/glfw"]
-	path = Editor/vendor/glfw
-	url = https://github.com/Nikola2412/glfw.git
-	branch = master
