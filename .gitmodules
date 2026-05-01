@@ -9,3 +9,7 @@
 	path = Editor/vendor/AsyncLogger
 	url = https://github.com/Nikola2412/AsyncLogger.git
 	branch = dev
+[submodule "Editor/vendor/glfw"]
+	path = Editor/vendor/glfw
+	url = https://github.com/Nikola2412/glfw.git
+	branch = master
