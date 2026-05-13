@@ -10,7 +10,7 @@ using namespace ImGui;
 class ExampleLayer : public Layer
 {
 public:
-	ExampleLayer(const std::string& name) : Layer(name), m_ImgWidth(0.0f), m_ImgHeight(0.0f), tex(0){};
+	ExampleLayer(const std::string& name) : Layer(name);
 	~ExampleLayer() = default;
 
 	virtual void onAttach() override;
