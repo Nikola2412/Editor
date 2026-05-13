@@ -13,6 +13,13 @@ namespace ImGui
 		float angle = 0,
 		ImU32 tint_col = IM_COL32_WHITE
 	);
+	void DrawCircularImage(
+		ImTextureID texture,
+		ImVec2 center,
+		float radius,
+		float angle = 0,
+		ImU32 tint = IM_COL32_WHITE);
+
 	void AnimateImageSize(float& currentSize, float targetSize, float sizeSpeed);
 	void AnimateImageSize(float& currentWidth, float& currentHeight, float targetWidth, float targetHeight, float sizeSpeed);
 	void AnimateImageRotation(float& currentRotation, float targetRotation, float rotationSpeed);

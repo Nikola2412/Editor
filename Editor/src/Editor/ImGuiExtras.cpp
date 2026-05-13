@@ -38,6 +38,61 @@ namespace ImGui
 
     }
 
+    void DrawCircularImage(ImTextureID texture, ImVec2 center, float radius, float angle, ImU32 tint)
+    {
+        ImDrawList* draw = ImGui::GetWindowDrawList();
+
+        const int segments = 64;
+
+        draw->PathClear();
+
+        // Create circular path
+        for (int i = 0; i < segments; i++)
+        {
+            float a = (2.0f * IM_PI * i) / segments;
+
+            float x = cosf(a) * radius;
+            float y = sinf(a) * radius;
+
+            draw->PathLineTo(ImVec2(center.x + x, center.y + y));
+        }
+
+        draw->PathFillConvex(IM_COL32_WHITE);
+
+        // Rotated quad corners
+        ImVec2 corners[4] =
+        {
+            ImVec2(-radius, -radius),
+            ImVec2(radius, -radius),
+            ImVec2(radius,  radius),
+            ImVec2(-radius,  radius)
+        };
+
+        ImVec2 rotated[4];
+
+        float c = cosf(angle);
+        float s = sinf(angle);
+
+        for (int i = 0; i < 4; i++)
+        {
+            rotated[i].x = center.x + corners[i].x * c - corners[i].y * s;
+            rotated[i].y = center.y + corners[i].x * s + corners[i].y * c;
+        }
+
+        draw->AddImageQuad(
+            texture,
+            rotated[0],
+            rotated[1],
+            rotated[2],
+            rotated[3],
+            ImVec2(0, 0),
+            ImVec2(1, 0),
+            ImVec2(1, 1),
+            ImVec2(0, 1),
+            tint
+        );
+    }
+
     void AnimateImageSize(float& currentSize, float targetSize, float sizeSpeed) {
         float dt = ImGui::GetIO().DeltaTime;
         currentSize += (targetSize - currentSize) * (1.0f - expf(-sizeSpeed * dt));
