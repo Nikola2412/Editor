@@ -35,7 +35,6 @@ namespace ImGui
             tint_col
         );
 
-
     }
 
     void DrawCircularImage(ImTextureID texture, ImVec2 center, float radius, float angle, ImU32 tint)
