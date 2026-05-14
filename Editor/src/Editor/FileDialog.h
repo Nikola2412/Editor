@@ -14,6 +14,7 @@ namespace Editor
 		static bool OpenFile(const char* filter, std::string& outPath);
 		static bool OpenFile(int flags, std::string& outPath);
 		static bool SaveFile(const char* filter, std::string& outPath);
+		static bool SaveFile(int flags, std::string& outPath);
 	};
 
 	class WindowsFileDialog
@@ -22,6 +23,7 @@ namespace Editor
 		static bool OpenFile(const char* filter, std::string& outPath);
 		static bool OpenFile(int flags, std::string& outPath);
 		static bool SaveFile(const char* filter, std::string& outPath);
+		static bool SaveFile(int flags, std::string& outPath);
 	};
 
 }
