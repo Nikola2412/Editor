@@ -15,11 +15,12 @@ namespace Editor {
 
         virtual const TextureSpecification& GetSpecification() const override { return spec; }
 
-
         virtual uint32_t GetWidth() const override { return width; }
         virtual uint32_t GetHeight() const override { return height; }
 		virtual float GetRotation() const override { return rotation; }
         virtual uint32_t GetRendererID() const override { return rendererID; }
+
+        virtual int Save(const std::string& path) const override;
 
         virtual const std::string& GetPath() const override { return path; }
 
@@ -41,7 +42,8 @@ namespace Editor {
         uint32_t width, height;
 		float rotation = 0.0f;
         uint32_t rendererID;
-        GLenum internalFormat = 0, dataFormat = 0;
+        GLenum internalFormat = 0, 
+            dataFormat = 0;
     };
 
 }

@@ -30,14 +30,8 @@ void menuUI(Editor::Application* app)
         {
             std::string s;
             if (FileDialog::SaveFile(PNG, s)) {
-                Log::GetCoreLogger()->Info("Saved file: " + s);
-                //stbi_write_png(
-                //    path.c_str(),
-                //    width,
-                //    height,
-                //    4,
-                //    pixels,
-                //    width * 4);
+                Ref<Texture2D> tex = ((ExampleLayer*)app->layer.get())->checkerBoard;
+                int res = tex->Save(s + ".png");
             }
             else {
                 Log::GetCoreLogger()->Warn("File dialog was canceled or an error occurred.");
@@ -134,10 +128,9 @@ void ExampleLayer::OnUIRender() {
 
         ImGui::InvisibleButton("imgbtn", size);
 
-        ImDrawList* draw = ImGui::GetWindowDrawList();
 
         // Draw rotated image
-        DrawImage(draw, tex, pos, size, m_Rotation);
+        DrawImage(tex, pos, size , m_Rotation);
 
         // --- Mouse drag → smooth target rotation ---
         if (ImGui::IsItemActive() && 0)
@@ -177,11 +170,11 @@ void ExampleLayer::OnUIRender() {
 
             if (ImGui::Button("0°"))   m_TargetRotation = 0.0f;
             ImGui::SameLine();
-            if (ImGui::Button("90°"))  m_TargetRotation = IM_PI * 0.5f;
+            if (ImGui::Button("90°"))  m_TargetRotation = MY_PI * 0.5f;
             ImGui::SameLine();
-            if (ImGui::Button("180°")) m_TargetRotation = IM_PI;
+            if (ImGui::Button("180°")) m_TargetRotation = MY_PI;
             ImGui::SameLine();
-            if (ImGui::Button("270°")) m_TargetRotation = IM_PI * 1.5f;
+            if (ImGui::Button("270°")) m_TargetRotation = MY_PI * 1.5f;
 
             ImGui::Separator();
 

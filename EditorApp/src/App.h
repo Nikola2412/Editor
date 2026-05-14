@@ -30,7 +30,8 @@ public:
 	}
 
 	bool vSync = true;
-
+	Ref<Texture2D> fallback = Texture2D::Load("temp.png");
+	Ref<Texture2D> checkerBoard = Texture2D::Load("assets/Checkerboard.png");
 private:
 	void nextImg(int i) {
 		if (m_TextureList.size() == 0) {
@@ -51,7 +52,6 @@ private:
 	Ref<Texture2D> m_Next;
 	Ref<Texture2D> m_Prev;
 	vec<Ref<Texture2D>> m_TextureList;
-	Ref<Texture2D> fallback = Texture2D::Load("temp.png");
 
 	//float m_ImgSize = 256.0f;          // current (animated)
 	float m_ImgWidth = 256.0f;         // current (animated)
