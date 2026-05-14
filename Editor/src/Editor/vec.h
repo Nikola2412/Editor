@@ -7,7 +7,7 @@
 #define TEXTURE_LOAD_FAILURE_WARNING(value) \
 	if constexpr (std::is_same_v<T, Ref<Texture2D>> || std::is_same_v<T, Scope<Texture2D>>) { \
 		if (!value->IsLoaded()) { \
-			Log::GetCoreLogger()->Warn("Texture was not added to list"); \
+			CORE_WARN("Texture was not added to list"); \
 			return; \
 		} \
 	}
@@ -24,8 +24,7 @@ namespace Editor
 		vec(std::initializer_list<T> init) : data(init) {}
 		T& operator[](size_t index) {
 			if (index >= data.size()) {
-				Log::GetCoreLogger()->Error("Attempting to access element from an empty vector or index out of bounds");
-				Log::GetCoreLogger()->Info("Adding temporary texture to vector");
+				CORE_ERROR("Attempting to access element from an empty vector or index out of bounds");
 				ASSERT(false, "Attempting to access element from an empty vector or index out of bounds");
 				/*if constexpr (std::is_same_v<T, Ref<Texture2D>> || std::is_same_v<T, Scope<Texture2D>>) {
 					this->emplace_back(Texture2D::Load("temp.png"));
@@ -43,7 +42,7 @@ namespace Editor
 		bool empty() const { return data.empty(); }
 		void erase(size_t index) {
 			if (index >= data.size()) {
-				Log::GetCoreLogger()->Error("Attempting to erase element from an empty vector or index out of bounds");
+				CORE_ERROR("Attempting to erase element from an empty vector or index out of bounds");
 				return;
 			}
 			

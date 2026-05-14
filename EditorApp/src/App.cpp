@@ -34,7 +34,7 @@ void menuUI(Editor::Application* app)
                 int res = tex->Save(s + ".png");
             }
             else {
-                Log::GetCoreLogger()->Warn("File dialog was canceled or an error occurred.");
+                CORE_WARN("File dialog was canceled or an error occurred.");
             }
         }
         if (ImGui::MenuItem("Exit"))
@@ -44,12 +44,12 @@ void menuUI(Editor::Application* app)
         if (ImGui::MenuItem("Add")) {
             std::string s;
             if (FileDialog::OpenFile(PNG, s)) {
-                Log::GetCoreLogger()->Info("Selected file: " + s);
+                CORE_INFO("Selected file: " + s);
                 ((ExampleLayer*)app->layer.get())->AddTexture(s);
             }
             else
             {
-                Log::GetCoreLogger()->Warn("File dialog was canceled or an error occurred.");
+                CORE_WARN("File dialog was canceled or an error occurred.");
             }
         }
         if (ImGui::MenuItem("Settings"))

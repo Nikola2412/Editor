@@ -78,7 +78,7 @@ namespace Editor {
 		}
 
 		//std::cout << spec.Title << '\n';
-		Log::GetCoreLogger()->Info(spec);
+		CORE_INFO(spec);
 
 	}
 
@@ -95,7 +95,7 @@ namespace Editor {
 		{
 			glfwTerminate();
 			//std::cout << "Terminating GLFW\n";
-			Log::GetCoreLogger()->Info("Terminating GLFW");
+			CORE_INFO("Terminating GLFW");
 		}
 	}
 
@@ -118,7 +118,7 @@ namespace Editor {
 	{
 		glfwSwapInterval(interval ? 1 : 0);
 
-		Log::GetCoreLogger()->Info("VSync: " + std::string(interval ? "Enabled" : "Disabled"));
+		CORE_INFO("VSync: " + std::string(interval ? "Enabled" : "Disabled"));
 
 		m_Data.VSync = interval;
 	}

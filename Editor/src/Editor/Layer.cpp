@@ -17,7 +17,7 @@ namespace Editor
 	void Layer::OnAttach()
 	{
 		//std::cout << "Layer: " << this->GetName() << " attached" << '\n';
-		Log::GetCoreLogger()->Info("Layer: " + this->GetName() + " attached");
+		CORE_INFO("Layer: " + this->GetName() + " attached");
 		
 		// Setup Dear ImGui context
 		IMGUI_CHECKVERSION();

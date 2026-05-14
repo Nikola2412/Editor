@@ -45,7 +45,7 @@ private:
 		   m_ListID = (m_ListID + i) % m_TextureList.size();
 	   this->setImg();
 
-		Log::GetClientLogger()->Info(std::to_string(i) + " " + std::to_string(m_TextureList.size()) + " -> " + std::to_string(m_ListID));
+		INFO(std::to_string(i) + " " + std::to_string(m_TextureList.size()) + " -> " + std::to_string(m_ListID));
 	}
 
 	//Ref<Texture2D> m_CheckerBoard;
