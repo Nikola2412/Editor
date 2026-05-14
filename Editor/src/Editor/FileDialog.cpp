@@ -36,6 +36,15 @@ bool Editor::FileDialog::SaveFile(const char* filter, std::string& outPath)
 
 #endif // _WIN32
 }
+bool Editor::FileDialog::SaveFile(int flags, std::string& outPath)
+{
+#ifdef _WIN32
+	return WindowsFileDialog::SaveFile(flags, outPath);
+#else
+#error "Not implemented"
+	return false;
+#endif
+}
 #ifdef _WIN32
 #include <Windows.h>
 #include <GLFW/glfw3.h>
@@ -89,6 +98,7 @@ bool Editor::WindowsFileDialog::OpenFile(int flags, std::string& outPath)
 		filter.push_back('\0');
 		filter += extensions;
 		filter.push_back('\0');
+		filter.push_back('\0');
 	}
 
 	return OpenFile(filter.c_str(), outPath);
@@ -96,5 +106,61 @@ bool Editor::WindowsFileDialog::OpenFile(int flags, std::string& outPath)
 
 bool Editor::WindowsFileDialog::SaveFile(const char* filter, std::string& outPath)
 {
+	OPENFILENAMEA ofn;
+	CHAR szFile[260] = { 0 };
+	CHAR currentDir[256] = { 0 };
+
+	ZeroMemory(&ofn, sizeof(OPENFILENAME));
+
+	ofn.lStructSize = sizeof(OPENFILENAME);
+	ofn.hwndOwner = glfwGetWin32Window(
+		(GLFWwindow*)Application::Get().GetWindow().GetNativeWindow());
+
+	ofn.lpstrFile = szFile;
+	ofn.nMaxFile = sizeof(szFile);
+
+	if (GetCurrentDirectoryA(256, currentDir))
+		ofn.lpstrInitialDir = currentDir;
+
+	ofn.lpstrFilter = filter;
+	ofn.nFilterIndex = 1;
+
+	ofn.Flags = OFN_PATHMUSTEXIST | OFN_OVERWRITEPROMPT | OFN_NOCHANGEDIR;
+
+	if (GetSaveFileNameA(&ofn) == TRUE)
+	{
+		outPath = ofn.lpstrFile;
+		return true;
+	}
+
 	return false;
+}
+
+bool Editor::WindowsFileDialog::SaveFile(int flags, std::string& outPath)
+{
+	std::string extensions;
+
+	if (flags & PNG)
+		extensions += "*.png;";
+
+	if (flags & JPG)
+		extensions += "*.jpg;";
+
+	if (!extensions.empty())
+		extensions.pop_back();
+
+	std::string filter;
+
+	if (!extensions.empty())
+	{
+		filter = "Image Files (" + extensions + ")";
+		filter.push_back('\0');
+
+		filter += extensions;
+		filter.push_back('\0');
+
+		filter.push_back('\0');
+	}
+
+	return SaveFile(filter.c_str(), outPath);
 }

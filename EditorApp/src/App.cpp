@@ -24,43 +24,56 @@ Editor::Application* Editor::CreateApplication()
 
 void menuUI(Editor::Application* app)
 {
-	if (ImGui::BeginMenuBar())
-	{
-		if (ImGui::MenuItem("Save"))
-		{
-			app->Close();
-		}
-		if (ImGui::MenuItem("Exit"))
-		{
-			app->Close();
-		}
-		if (ImGui::MenuItem("Add")) {
-			std::string s;
-			if (FileDialog::OpenFile(PNG, s)) {
-				Log::GetCoreLogger()->Info("Selected file: " + s);
-				((ExampleLayer*)app->layer.get())->AddTexture(s);
-			}
-			else
-			{
-				Log::GetCoreLogger()->Warn("File dialog was canceled or an error occurred.");
-			}
-		}
-        if(ImGui::MenuItem("Settings"))
+    if (ImGui::BeginMenuBar())
+    {
+        if (ImGui::MenuItem("Save"))
+        {
+            std::string s;
+            if (FileDialog::SaveFile(PNG, s)) {
+                Log::GetCoreLogger()->Info("Saved file: " + s);
+                //stbi_write_png(
+                //    path.c_str(),
+                //    width,
+                //    height,
+                //    4,
+                //    pixels,
+                //    width * 4);
+            }
+            else {
+                Log::GetCoreLogger()->Warn("File dialog was canceled or an error occurred.");
+            }
+        }
+        if (ImGui::MenuItem("Exit"))
+        {
+            app->Close();
+        }
+        if (ImGui::MenuItem("Add")) {
+            std::string s;
+            if (FileDialog::OpenFile(PNG, s)) {
+                Log::GetCoreLogger()->Info("Selected file: " + s);
+                ((ExampleLayer*)app->layer.get())->AddTexture(s);
+            }
+            else
+            {
+                Log::GetCoreLogger()->Warn("File dialog was canceled or an error occurred.");
+            }
+        }
+        if (ImGui::MenuItem("Settings"))
             ImGui::OpenPopup("SettingsPopup");
-        
+
         if (ImGui::BeginPopup("SettingsPopup"))
         {
             bool* vsyncPtr = &((ExampleLayer*)app->layer.get())->vSync;
             ImGui::Text("Settings");
             if (ImGui::Checkbox("VSync", vsyncPtr)) {
-				app->SetVSync(*vsyncPtr);
+                app->SetVSync(*vsyncPtr);
             }
             ImGui::EndPopup();
         }
-		ImGui::EndMenuBar();
-	}
+        ImGui::EndMenuBar();
+    }
 
-	//ImGui::ShowDemoWindow();
+    //ImGui::ShowDemoWindow();
 }
 
 
