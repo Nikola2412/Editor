@@ -45,7 +45,6 @@ namespace ImGui
 
         draw->PathClear();
 
-        // Create circular path
         for (int i = 0; i < segments; i++)
         {
             float a = (2.0f * IM_PI * i) / segments;
@@ -58,7 +57,6 @@ namespace ImGui
 
         draw->PathFillConvex(IM_COL32_WHITE);
 
-        // Rotated quad corners
         ImVec2 corners[4] =
         {
             ImVec2(-radius, -radius),
