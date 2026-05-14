@@ -21,7 +21,7 @@ namespace Editor
 			v2.emplace_back(CreateRef<AsyncConsoleLogger>("App"));
 			clientLogger = CreateRef<AsyncLogger>(v2, "App");
 		}
-#else
+#elif RELEASE
 		coreLogger = CreateRef<AsyncConsoleLogger>("Editor");
 		clientLogger = CreateRef<AsyncConsoleLogger>("App");
 #endif // DEBUG

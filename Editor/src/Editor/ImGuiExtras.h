@@ -1,12 +1,11 @@
 #pragma once
 #include <imgui.h>
 
-#define IM_PI 3.14159265358979323846f
+#define MY_PI 3.14159265358979323846f
 
 namespace ImGui
 {
 	void DrawImage(
-		ImDrawList* draw,
 		ImTextureID tex,
 		ImVec2 pos,
 		ImVec2 size,

@@ -3,6 +3,8 @@
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include <stb_image_write.h>
 #include "Log.h"
 
 namespace Editor {
@@ -60,7 +62,7 @@ namespace Editor {
 		if (data)
 		{
 			isLoaded = true;
-			Log::GetCoreLogger()->Info("Loaded texture from path: " + path);
+			CORE_INFO("Loaded texture from path: " + path);
 			
 			this->width = width;
 			this->height = height;
@@ -97,7 +99,7 @@ namespace Editor {
 		}
 		else
 		{
-			Log::GetCoreLogger()->Error("Failed to load texture from path: " +  path);
+			CORE_ERROR("Failed to load texture from path: " +  path);
 			//ASSERT(false, "Failed to load texture!");
 			isLoaded = false;
 		}
@@ -106,6 +108,69 @@ namespace Editor {
 	OpenGLTexture2D::~OpenGLTexture2D()
 	{
 		glDeleteTextures(1, &rendererID);
+	}
+	
+
+	int OpenGLTexture2D::Save(const std::string& path) const
+	{
+
+		if (!isLoaded) return -1;
+
+		if (!rendererID)
+			return -2;
+
+		glBindTexture(GL_TEXTURE_2D, rendererID);
+
+		int channels = 4;
+
+		switch (dataFormat)
+		{
+		case GL_RED:
+			channels = 1;
+			break;
+
+		case GL_RGB:
+			channels = 3;
+			break;
+
+		case GL_RGBA:
+			channels = 4;
+			break;
+
+		default:
+			return -1;
+		}
+
+		std::vector<unsigned char> pixels(width * height * channels);
+
+		glGetTexImage(
+			GL_TEXTURE_2D,
+			0,
+			dataFormat,
+			GL_UNSIGNED_BYTE,
+			pixels.data()
+		);
+
+		const int stride = width * channels;
+		std::vector<unsigned char> flipped(pixels.size());
+
+		for (uint32_t y = 0; y < height; y++)
+		{
+			memcpy(
+				&flipped[y * stride],
+				&pixels[(height - 1 - y) * stride],
+				stride
+			);
+		}
+		int success = stbi_write_png(
+			path.c_str(),
+			width,
+			height,
+			channels,
+			flipped.data(),
+			stride
+		);
+		return 0;
 	}
 
 	void OpenGLTexture2D::SetData(void* data, uint32_t size)

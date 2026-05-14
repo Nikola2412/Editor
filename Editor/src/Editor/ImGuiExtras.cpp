@@ -3,8 +3,10 @@
 
 namespace ImGui
 {
-    void DrawImage(ImDrawList* draw, ImTextureID tex, ImVec2 pos, ImVec2 size, float angle, ImU32 tint_col)
+    void DrawImage(ImTextureID tex, ImVec2 pos, ImVec2 size, float angle, ImU32 tint_col)
     {
+        ImDrawList* draw = ImGui::GetWindowDrawList();
+
         ImVec2 center = ImVec2(pos.x + size.x * 0.5f, pos.y + size.y * 0.5f);
 
         float cos_a = cosf(angle);
@@ -47,7 +49,7 @@ namespace ImGui
 
         for (int i = 0; i < segments; i++)
         {
-            float a = (2.0f * IM_PI * i) / segments;
+            float a = (2.0f * MY_PI * i) / segments;
 
             float x = cosf(a) * radius;
             float y = sinf(a) * radius;
@@ -78,14 +80,8 @@ namespace ImGui
 
         draw->AddImageQuad(
             texture,
-            rotated[0],
-            rotated[1],
-            rotated[2],
-            rotated[3],
-            ImVec2(0, 0),
-            ImVec2(1, 0),
-            ImVec2(1, 1),
-            ImVec2(0, 1),
+            rotated[0], rotated[1], rotated[2], rotated[3],
+            ImVec2(0, 0), ImVec2(1, 0), ImVec2(1, 1), ImVec2(0, 1),
             tint
         );
     }
@@ -109,8 +105,8 @@ namespace ImGui
 
         float delta = targetRotation - currentRotation;
 
-        while (delta > IM_PI)  delta -= IM_PI * 2.0f;
-        while (delta < -IM_PI) delta += IM_PI * 2.0f;
+        while (delta > MY_PI)  delta -= MY_PI * 2.0f;
+        while (delta < -MY_PI) delta += MY_PI * 2.0f;
 
         currentRotation += delta * (1.0f - expf(-rotationSpeed * dt));
     }
@@ -120,8 +116,8 @@ namespace ImGui
 
         float delta = targetRotation - currentRotation;
 
-        while (delta > IM_PI)  delta -= IM_PI * 2.0f;
-        while (delta < -IM_PI) delta += IM_PI * 2.0f;
+        while (delta > MY_PI)  delta -= MY_PI * 2.0f;
+        while (delta < -MY_PI) delta += MY_PI * 2.0f;
 
         currentRotation += delta * (1.0f - expf(-rotationSpeed * dt));
         currentSize += (targetSize - currentSize) * (1.0f - expf(-sizeSpeed * dt));

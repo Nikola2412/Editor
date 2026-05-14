@@ -41,7 +41,7 @@ namespace Editor
 			m_LayerStack.emplace_back(std::make_shared<T>())->OnAttach();
 		}
 
-		void PushLayer(const std::shared_ptr<Layer>& layer)
+		void PushLayer(const Ref<Layer>& layer)
 		{
 			m_LayerStack.emplace_back(layer);
 			layer->OnAttach();
@@ -55,7 +55,7 @@ namespace Editor
 			layer->OnAttach();
 		}
 
-		void SetLayer(const std::shared_ptr<Layer>& layer)
+		void SetLayer(const Ref<Layer>& layer)
 		{
 			this->layer = layer;
 			this->layer->OnAttach();
@@ -78,13 +78,13 @@ namespace Editor
 		bool m_Running = true;
 		float lastFrameTime = 0.0f;
 
-		std::vector<std::shared_ptr<Layer>> m_LayerStack;
+		std::vector<Ref<Layer>> m_LayerStack;
 		std::function<void()> m_UICallback;
 
 	private:
 		static Application* Instance;
 	public:
-		std::shared_ptr<Layer> layer;
+		Ref<Layer> layer;
 	};
 
 	Application* CreateApplication();
