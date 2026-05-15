@@ -86,6 +86,53 @@ namespace ImGui
         );
     }
 
+    void MorphImage(ImTextureID currentTex, ImTextureID prevTex, float& morph, float& morphSpeed, bool& isMorphing, ImVec2 pos, ImVec2 size, float angle)
+    {
+        ImDrawList* draw = ImGui::GetWindowDrawList();
+
+        if (isMorphing)
+        {
+            morph += ImGui::GetIO().DeltaTime * morphSpeed;
+
+            if (morph >= 1.0f)
+            {
+                morph = 1.0f;
+                isMorphing = false;
+            }
+
+            int oldAlpha = (int)((1.0f - morph) * 255.0f);
+            int newAlpha = (int)(morph * 255.0f);
+
+            // old image
+            DrawImage(
+                prevTex,
+                pos,
+                size,
+                angle,
+                IM_COL32(255, 255, 255, oldAlpha)
+            );
+
+            // new image
+            DrawImage(
+                currentTex,
+                pos,
+                size,
+                angle,
+                IM_COL32(255, 255, 255, newAlpha)
+            );
+        }
+        else
+        {
+            DrawImage(
+                currentTex,
+                pos,
+                size,
+                angle,
+                IM_COL32_WHITE
+            );
+        }
+    }
+
     void AnimateImageSize(float& currentSize, float targetSize, float sizeSpeed) {
         float dt = ImGui::GetIO().DeltaTime;
         currentSize += (targetSize - currentSize) * (1.0f - expf(-sizeSpeed * dt));

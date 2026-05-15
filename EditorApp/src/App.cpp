@@ -130,7 +130,7 @@ void ExampleLayer::OnUIRender() {
 
 
         // Draw rotated image
-        DrawImage(tex, pos, size , m_Rotation);
+        MorphImage(m_CurrentTex, m_PreviousTex, m_Morph, m_MorphSpeed, m_IsMorphing, pos, size, m_Rotation);
 
         // --- Mouse drag → smooth target rotation ---
         if (ImGui::IsItemActive() && 0)
