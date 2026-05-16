@@ -62,7 +62,7 @@ namespace Editor {
 		if (data)
 		{
 			isLoaded = true;
-			CORE_INFO("Loaded texture from path: " + path);
+			CORE_INFO("Loaded texture from path: {}", path);
 			
 			this->width = width;
 			this->height = height;
@@ -99,7 +99,7 @@ namespace Editor {
 		}
 		else
 		{
-			CORE_ERROR("Failed to load texture from path: " +  path);
+			CORE_ERROR("Failed to load texture from path: {}", path);
 			//ASSERT(false, "Failed to load texture!");
 			isLoaded = false;
 		}

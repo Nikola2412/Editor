@@ -16,15 +16,14 @@ namespace Editor
 		static Ref<AsyncLogger> coreLogger;
 		static Ref<AsyncLogger> clientLogger;
 	};
-
 #if DEBUG | RELEASE
-#define CORE_INFO(...)		Log::GetCoreLogger()->Info(__VA_ARGS__)
-#define CORE_WARN(...)		Log::GetCoreLogger()->Warn(__VA_ARGS__)
-#define CORE_ERROR(...)		Log::GetCoreLogger()->Error(__VA_ARGS__)
+#define CORE_INFO(...)			Log::GetCoreLogger()->Info(__VA_ARGS__)
+#define CORE_WARN(...)			Log::GetCoreLogger()->Warn(__VA_ARGS__)
+#define CORE_ERROR(...)			Log::GetCoreLogger()->Error(__VA_ARGS__)
 
 #define CLIENT_INFO(...)		Log::GetClientLogger()->Info(__VA_ARGS__)
 #define CLIENT_WARN(...)		Log::GetClientLogger()->Warn(__VA_ARGS__)
-#define CLIENT_ERROR(...)	Log::GetClientLogger()->Error(__VA_ARGS__)
+#define CLIENT_ERROR(...)		Log::GetClientLogger()->Error(__VA_ARGS__)
 #else
 
 #define CORE_INFO(...)	
@@ -35,5 +34,4 @@ namespace Editor
 #define CLIENT_WARN(...)		
 #define CLIENT_ERROR(...)		
 #endif // PH_DEBUG
-
 }

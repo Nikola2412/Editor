@@ -44,7 +44,7 @@ void menuUI(Editor::Application* app)
         if (ImGui::MenuItem("Add")) {
             std::string s;
             if (FileDialog::OpenFile(PNG, s)) {
-                CORE_INFO("Selected file: " + s);
+                CORE_INFO("Selected file: {}", s);
                 ((ExampleLayer*)app->layer.get())->AddTexture(s);
             }
             else
@@ -130,7 +130,7 @@ void ExampleLayer::OnUIRender() {
 
 
         // Draw rotated image
-        MorphImage(m_CurrentTex, m_PreviousTex, m_Morph, m_MorphSpeed, m_IsMorphing, pos, size, m_Rotation);
+        MorphImage(m_CurrentTex, m_PreviousTex, m_MorphSpeed, pos, size, m_Rotation);
 
         // --- Mouse drag → smooth target rotation ---
         if (ImGui::IsItemActive() && 0)
@@ -163,6 +163,7 @@ void ExampleLayer::OnUIRender() {
             
             ImGui::SliderFloat("Image Width", &m_TargetImgWidth, 128.0f, 512.0f);
             ImGui::SliderFloat("Image Height", &m_TargetImgHeight, 128.0f, 512.0f);
+            ImGui::SliderFloat("Image Morph", &m_MorphSpeed, 1.0f, 20.0f);
 
             ImGui::Separator();
 
@@ -183,6 +184,7 @@ void ExampleLayer::OnUIRender() {
                 m_TargetImgWidth = 512.0f;
                 m_TargetImgHeight = 512.0f;
                 m_TargetRotation = 0.0f;
+                m_MorphSpeed = 1.0f;
             }
 
             ImGui::Separator();

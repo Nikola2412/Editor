@@ -1,6 +1,10 @@
 #include "pch.h"
 #include "ImGuiExtras.h"
 
+#include "Log.h"
+
+#define IM_DELTA_TIME ImGui::GetIO().DeltaTime
+
 namespace ImGui
 {
     void DrawImage(ImTextureID tex, ImVec2 pos, ImVec2 size, float angle, ImU32 tint_col)
@@ -86,13 +90,19 @@ namespace ImGui
         );
     }
 
-    void MorphImage(ImTextureID currentTex, ImTextureID prevTex, float& morph, float& morphSpeed, bool& isMorphing, ImVec2 pos, ImVec2 size, float angle)
+    void startMorph()
+    {
+        morph = 0.0f; 
+        isMorphing = true;
+    }
+
+    void MorphImage(ImTextureID currentTex, ImTextureID prevTex, float& morphSpeed, ImVec2 pos, ImVec2 size, float angle)
     {
         ImDrawList* draw = ImGui::GetWindowDrawList();
 
         if (isMorphing)
         {
-            morph += ImGui::GetIO().DeltaTime * morphSpeed;
+            morph += IM_DELTA_TIME * morphSpeed;
 
             if (morph >= 1.0f)
             {
@@ -134,13 +144,13 @@ namespace ImGui
     }
 
     void AnimateImageSize(float& currentSize, float targetSize, float sizeSpeed) {
-        float dt = ImGui::GetIO().DeltaTime;
+        float dt = IM_DELTA_TIME;
         currentSize += (targetSize - currentSize) * (1.0f - expf(-sizeSpeed * dt));
     }
 
     void AnimateImageSize(float& currentWidth, float& currentHeight, float targetWidth, float targetHeight, float sizeSpeed)
     {
-        float dt = ImGui::GetIO().DeltaTime;
+        float dt = IM_DELTA_TIME;
         currentWidth += (targetWidth - currentWidth) * (1.0f - expf(-sizeSpeed * dt));
 		currentHeight += (targetHeight - currentHeight) * (1.0f - expf(-sizeSpeed * dt));
     }
@@ -148,7 +158,7 @@ namespace ImGui
 
     void AnimateImageRotation(float& currentRotation, float targetRotation, float rotationSpeed)
     {
-        float dt = ImGui::GetIO().DeltaTime;
+        float dt = IM_DELTA_TIME;
 
         float delta = targetRotation - currentRotation;
 
@@ -159,7 +169,7 @@ namespace ImGui
     }
     void AnimatedImage(float& currentRotation, float targetRotation, float rotationSpeed, float& currentSize, float targetSize, float sizeSpeed)
     {
-        float dt = ImGui::GetIO().DeltaTime;
+        float dt = IM_DELTA_TIME;
 
         float delta = targetRotation - currentRotation;
 

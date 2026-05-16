@@ -47,8 +47,7 @@ private:
 
 		m_CurrentTex = (ImTextureID)m_TextureList[m_ListID]->GetRendererID();
 
-		m_Morph = 0.0f;
-		m_IsMorphing = true;
+		ImGui::startMorph();
 	}
 
 	Ref<Texture2D> m_Next;
@@ -70,10 +69,7 @@ private:
 	ImTextureID m_CurrentTex = 0;
 	ImTextureID m_PreviousTex = 0;
 
-	float m_Morph = 1.0f;
 	float m_MorphSpeed = 1.0f;
-
-	bool m_IsMorphing = false;
 
 	size_t m_ListID = 0;
 };

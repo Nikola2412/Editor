@@ -5,6 +5,9 @@
 
 namespace ImGui 
 {
+	static float morph = 0;
+	static bool isMorphing = false;
+
 	void DrawImage(
 		ImTextureID tex,
 		ImVec2 pos,
@@ -19,8 +22,9 @@ namespace ImGui
 		float angle = 0,
 		ImU32 tint = IM_COL32_WHITE);
 
+	void startMorph();
 	void MorphImage(ImTextureID currentTex, ImTextureID prevTex,
-		float& morph, float& morphSpeed, bool& isMorphing,
+		float& morphSpeed,
 		ImVec2 pos, ImVec2 size, float angle = 0);
 
 	void AnimateImageSize(float& currentSize, float targetSize, float sizeSpeed);
