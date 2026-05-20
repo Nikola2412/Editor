@@ -52,7 +52,7 @@ namespace Editor {
 		glTextureParameteri(rendererID, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	}
 
-	OpenGLTexture2D::OpenGLTexture2D(const std::string& path) : path(path)
+	OpenGLTexture2D::OpenGLTexture2D(const std::string& path) : path(path), height(0), width(0), rendererID(0)
 	{
 
 		int width, height, channels;
@@ -63,7 +63,7 @@ namespace Editor {
 		{
 			isLoaded = true;
 			CORE_INFO("Loaded texture from path: {}", path);
-			
+
 			this->width = width;
 			this->height = height;
 
@@ -78,11 +78,23 @@ namespace Editor {
 				internalFormat = GL_RGB8;
 				dataFormat = GL_RGB;
 			}
+			else if (channels == 1)
+			{
+				internalFormat = GL_R8;
+				dataFormat = GL_RED;
+			}
+			else
+			{
+				CORE_ERROR("Unsupported channel count: {}", channels);
+				isLoaded = false;
+				stbi_image_free(data);
+				return;
+			}
 
 			this->internalFormat = internalFormat;
 			this->dataFormat = dataFormat;
 
-			ASSERT(internalFormat & dataFormat, "Format not supported!");
+			ASSERT(internalFormat && dataFormat, "Format not supported!");
 
 			glCreateTextures(GL_TEXTURE_2D, 1, &rendererID);
 			glTextureStorage2D(rendererID, 1, internalFormat, width, height);
@@ -94,12 +106,11 @@ namespace Editor {
 			glTextureParameteri(rendererID, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
 			glTextureSubImage2D(rendererID, 0, 0, 0, width, height, dataFormat, GL_UNSIGNED_BYTE, data);
-
 			stbi_image_free(data);
 		}
 		else
 		{
-			CORE_ERROR("Failed to load texture from path: {}", path);
+			CORE_ERROR("Failed: {}, path: {}", stbi_failure_reason(), path);
 			//ASSERT(false, "Failed to load texture!");
 			isLoaded = false;
 		}

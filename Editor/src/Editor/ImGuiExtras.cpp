@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "ImGuiExtras.h"
+#include <algorithm> 
 
 #include "Log.h"
 
@@ -96,7 +97,7 @@ namespace ImGui
         isMorphing = true;
     }
 
-    void MorphImage(ImTextureID currentTex, ImTextureID prevTex, float& morphSpeed, ImVec2 pos, ImVec2 size, float angle)
+    void MorphImage(ImTextureID currentTex, ImTextureID prevTex, ImVec2 pos, ImVec2 size, float& morphSpeed, float angle)
     {
         ImDrawList* draw = ImGui::GetWindowDrawList();
 
@@ -143,12 +144,126 @@ namespace ImGui
         }
     }
 
-    void AnimateImageSize(float& currentSize, float targetSize, float sizeSpeed) {
+    void startSlide(int direction, float width)
+    {
+        isSliding = true;
+        m_SlideOffset = 0.0f;
+        m_SlideDirection = -direction;
+        m_TargetSlideOffset =  width;
+    }
+
+    void SlideImage(ImTextureID currentTex, ImTextureID previousTex, const ImVec2& pos, const ImVec2& size, float& speed, float rotation)
+    {
+        if (isSliding)
+        {
+            float dt = ImGui::GetIO().DeltaTime;
+
+            // Animate
+            m_SlideOffset +=
+                (m_TargetSlideOffset - m_SlideOffset)
+                * speed * dt;
+
+            // Snap
+            if (fabs(m_TargetSlideOffset - m_SlideOffset) < 0.5f)
+                m_SlideOffset = m_TargetSlideOffset;
+
+            // Progress 0 -> 1
+            float t = m_SlideOffset / size.x;
+
+            t = std::clamp(t, 0.0f, 1.0f);
+
+            // Smoothstep easing
+            t = t * t * (3.0f - 2.0f * t);
+
+            // Widths
+            float newWidth = size.x * t;
+            float oldWidth = size.x * (1.0f - t);
+
+            ImVec2 oldPos;
+            ImVec2 newPos;
+
+            // ==================================================
+            // DIRECTION
+            // ==================================================
+            // m_SlideDirection = -1  -> prev  (left -> right)
+            // m_SlideDirection = 1 -> next  (right -> left)
+            // ==================================================
+
+            if (m_SlideDirection == -1)
+            {
+                // OLD shrinks to left
+                oldPos = pos;
+
+                // NEW grows from right
+                newPos = ImVec2(
+                    pos.x + oldWidth,
+                    pos.y
+                );
+            }
+            else
+            {
+                // OLD shrinks to right
+                oldPos = ImVec2(
+                    pos.x + newWidth,
+                    pos.y
+                );
+
+                // NEW grows from left
+                newPos = pos;
+            }
+
+            ImVec2 oldSize(oldWidth, size.y);
+            ImVec2 newSize(newWidth, size.y);
+
+            // Draw old image
+            if (oldWidth > 1.0f)
+            {
+                DrawImage(
+                    previousTex,
+                    oldPos,
+                    oldSize,
+                    rotation
+                );
+            }
+
+            // Draw new image
+            if (newWidth > 1.0f)
+            {
+                DrawImage(
+                    currentTex,
+                    newPos,
+                    newSize,
+                    rotation
+                );
+            }
+
+            // Finish
+            if (m_SlideOffset >= m_TargetSlideOffset - 5.0f)
+            {
+                m_SlideOffset = 0.0f;
+                m_TargetSlideOffset = 0.0f;
+                isSliding = false;
+            }
+        }
+        else
+        {
+            DrawImage(
+                currentTex,
+                pos,
+                size,
+                rotation,
+                IM_COL32_WHITE
+            );
+        }
+    }
+
+
+    void AnimateImageSize(float& currentSize, float targetSize, float& sizeSpeed) {
         float dt = IM_DELTA_TIME;
         currentSize += (targetSize - currentSize) * (1.0f - expf(-sizeSpeed * dt));
     }
 
-    void AnimateImageSize(float& currentWidth, float& currentHeight, float targetWidth, float targetHeight, float sizeSpeed)
+    void AnimateImageSize(float& currentWidth, float& currentHeight, float targetWidth, float targetHeight, float& sizeSpeed)
     {
         float dt = IM_DELTA_TIME;
         currentWidth += (targetWidth - currentWidth) * (1.0f - expf(-sizeSpeed * dt));
@@ -156,7 +271,7 @@ namespace ImGui
     }
 
 
-    void AnimateImageRotation(float& currentRotation, float targetRotation, float rotationSpeed)
+    void AnimateImageRotation(float& currentRotation, float targetRotation, float& rotationSpeed)
     {
         float dt = IM_DELTA_TIME;
 
@@ -167,7 +282,7 @@ namespace ImGui
 
         currentRotation += delta * (1.0f - expf(-rotationSpeed * dt));
     }
-    void AnimatedImage(float& currentRotation, float targetRotation, float rotationSpeed, float& currentSize, float targetSize, float sizeSpeed)
+    void AnimatedImage(float& currentRotation, float targetRotation, float& rotationSpeed, float& currentSize, float targetSize, float& sizeSpeed)
     {
         float dt = IM_DELTA_TIME;
 

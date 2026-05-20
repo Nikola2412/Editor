@@ -40,7 +40,7 @@ private:
 			m_ListID = (m_ListID + dir) % m_TextureList.size();
 
 		setImg();
-		ImGui::startMorph();
+		ImGui::startSlide(dir,m_ImgWidth);
 	}
 
 	Ref<Texture2D> m_Next;
@@ -60,10 +60,12 @@ private:
 	float m_TargetRotation = 0.0f;			// desired
 	float m_RotationSpeed = 10.0f;			// smoothing strength
 
+
+	float m_AnimSpeed = 10.0f;
+
 	ImTextureID m_CurrentTexID = 0;
 	ImTextureID m_PreviousTexID = 0;
 
-	float m_MorphSpeed = 1.0f;
 
 	size_t m_ListID = 0;
 };

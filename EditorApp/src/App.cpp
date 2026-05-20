@@ -77,13 +77,13 @@ void ExampleLayer::onAttach()
 	m_Next = Texture2D::Load("assets/next.png");
 	m_Prev = Texture2D::Load("assets/prev.png");
 
-	//m_TextureList.reserve(10);
+	m_TextureList.reserve(5);
 
 	AddTexture("assets/0.png");
 	AddTexture("assets/1.png");
 	AddTexture("assets/2.png");
 	AddTexture("assets/3.png");
-	AddTexture("assets/4.png");//Error test
+    AddTexture("assets/4.png");
     this->setImg();
 
 }
@@ -130,7 +130,15 @@ void ExampleLayer::OnUIRender() {
 
 
         // Draw rotated image
-        MorphImage(m_CurrentTexID, m_PreviousTexID, m_MorphSpeed, pos, size, m_Rotation);
+        SlideImage(
+            m_CurrentTexID,
+            m_PreviousTexID,
+            pos,
+            size,
+            m_AnimSpeed,
+            m_Rotation
+        );
+        
 
         // --- Mouse drag → smooth target rotation ---
         if (ImGui::IsItemActive() && 0)
@@ -163,7 +171,7 @@ void ExampleLayer::OnUIRender() {
             
             ImGui::SliderFloat("Image Width", &m_TargetImgWidth, 128.0f, 512.0f);
             ImGui::SliderFloat("Image Height", &m_TargetImgHeight, 128.0f, 512.0f);
-            ImGui::SliderFloat("Image Morph", &m_MorphSpeed, 1.0f, 20.0f);
+            ImGui::SliderFloat("Image Morph", &m_AnimSpeed, 1.0f, 20.0f);
 
             ImGui::Separator();
 
@@ -184,7 +192,7 @@ void ExampleLayer::OnUIRender() {
                 m_TargetImgWidth = 512.0f;
                 m_TargetImgHeight = 512.0f;
                 m_TargetRotation = 0.0f;
-                m_MorphSpeed = 1.0f;
+                m_AnimSpeed = 10.0f;
             }
 
             ImGui::Separator();
