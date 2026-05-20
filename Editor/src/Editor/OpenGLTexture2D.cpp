@@ -142,7 +142,7 @@ namespace Editor {
 		}
 
 		std::vector<unsigned char> pixels(width * height * channels);
-
+		stbi_flip_vertically_on_write(1);
 		glGetTexImage(
 			GL_TEXTURE_2D,
 			0,

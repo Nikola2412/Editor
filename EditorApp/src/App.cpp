@@ -30,8 +30,8 @@ void menuUI(Editor::Application* app)
         {
             std::string s;
             if (FileDialog::SaveFile(PNG, s)) {
-                Ref<Texture2D> tex = ((ExampleLayer*)app->layer.get())->checkerBoard;
-                int res = tex->Save(s + ".png");
+                Ref<Texture2D> tex = ((ExampleLayer*)app->layer.get())->GetCurrentTexture();
+                int res = tex->Save(s);
             }
             else {
                 CORE_WARN("File dialog was canceled or an error occurred.");
@@ -130,7 +130,7 @@ void ExampleLayer::OnUIRender() {
 
 
         // Draw rotated image
-        MorphImage(m_CurrentTex, m_PreviousTex, m_MorphSpeed, pos, size, m_Rotation);
+        MorphImage(m_CurrentTexID, m_PreviousTexID, m_MorphSpeed, pos, size, m_Rotation);
 
         // --- Mouse drag → smooth target rotation ---
         if (ImGui::IsItemActive() && 0)
