@@ -30,7 +30,7 @@ namespace Editor
 			if (glfwGetWindowAttrib(static_cast<GLFWwindow*>(m_WindowHandle->GetNativeWindow()), GLFW_FOCUSED))
 				lastFrameTime = time;
 
-			if (timestep < 10 && !m_WindowHandle->isMinimized())
+			if (timestep.getSeconds() < 10 && !m_WindowHandle->isMinimized())
 			{
 				layer->OnUpdate(timestep);
 				layer->Begin();

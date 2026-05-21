@@ -65,6 +65,11 @@ namespace Editor
 
 		Ref<Layer> GetLayer() { return layer; };
 
+		template<typename T>
+		T* GetLayer() {
+			return dynamic_cast<T*>(layer.get());
+		}
+
 		void Close();
 
 		static Application& Get() { return *Instance; };
@@ -80,6 +85,8 @@ namespace Editor
 
 		std::vector<Ref<Layer>> m_LayerStack;
 		std::function<void()> m_UICallback;
+
+
 
 	private:
 		static Application* Instance;

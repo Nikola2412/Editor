@@ -26,13 +26,14 @@ public:
 	inline void setImg() {
 		m_CurrentTexID = (ImTextureID)GetCurrentTexture()->GetRendererID();
 	}
-
+	int m_AnimationSelector = 0;
 	bool vSync = true;
 	inline Ref<Texture2D> GetCurrentTexture() { return m_TextureList.empty() ? fallback : m_TextureList[m_ListID]; }
 private:
 	void nextImg(int dir)
 	{
 		m_PreviousTexID = m_CurrentTexID;
+		m_SlideDirection = dir > 0 ? SlideDirection::R : SlideDirection::L;
 
 		if (m_ListID == 0 && dir < 0)
 			m_ListID = m_TextureList.size() - 1;
@@ -40,7 +41,6 @@ private:
 			m_ListID = (m_ListID + dir) % m_TextureList.size();
 
 		setImg();
-		ImGui::startSlide(dir,m_ImgWidth);
 	}
 
 	Ref<Texture2D> m_Next;
@@ -61,13 +61,17 @@ private:
 	float m_RotationSpeed = 10.0f;			// smoothing strength
 
 
-	float m_AnimSpeed = 10.0f;
+	float m_AnimationSpeed = 10.0f;
+
+
+	SlideDirection m_SlideDirection = SlideDirection::R;
 
 	ImTextureID m_CurrentTexID = 0;
 	ImTextureID m_PreviousTexID = 0;
 
 
 	size_t m_ListID = 0;
+
 };
 
 void menuUI(Editor::Application* app);

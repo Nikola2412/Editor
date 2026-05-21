@@ -30,7 +30,7 @@ void menuUI(Editor::Application* app)
         {
             std::string s;
             if (FileDialog::SaveFile(PNG, s)) {
-                Ref<Texture2D> tex = ((ExampleLayer*)app->layer.get())->GetCurrentTexture();
+                Ref<Texture2D> tex = (app->GetLayer<ExampleLayer>())->GetCurrentTexture();
                 int res = tex->Save(s);
             }
             else {
@@ -45,7 +45,7 @@ void menuUI(Editor::Application* app)
             std::string s;
             if (FileDialog::OpenFile(PNG, s)) {
                 CORE_INFO("Selected file: {}", s);
-                ((ExampleLayer*)app->layer.get())->AddTexture(s);
+                (app->GetLayer<ExampleLayer>())->AddTexture(s);
             }
             else
             {
@@ -57,11 +57,24 @@ void menuUI(Editor::Application* app)
 
         if (ImGui::BeginPopup("SettingsPopup"))
         {
-            bool* vsyncPtr = &((ExampleLayer*)app->layer.get())->vSync;
+            bool* vsyncPtr = &(app->GetLayer<ExampleLayer>()->vSync);
             ImGui::Text("Settings");
             if (ImGui::Checkbox("VSync", vsyncPtr)) {
                 app->SetVSync(*vsyncPtr);
             }
+
+            ImGui::Separator();
+            const char* availableAnimations[] =
+            {
+                "Slide Animation",
+                "Morph Animation"
+            };
+
+            ImGui::Text("Choose animation type:");
+            ImGui::Combo("##animation_combo",
+                &(app->GetLayer<ExampleLayer>()->m_AnimationSelector),
+                availableAnimations,
+                IM_ARRAYSIZE(availableAnimations));
             ImGui::EndPopup();
         }
         ImGui::EndMenuBar();
@@ -130,25 +143,38 @@ void ExampleLayer::OnUIRender() {
 
 
         // Draw rotated image
-        SlideImage(
-            m_CurrentTexID,
-            m_PreviousTexID,
-            pos,
-            size,
-            m_AnimSpeed,
-            m_Rotation
-        );
+        if (m_AnimationSelector == 0) {
+            SlideImage(
+                m_CurrentTexID,
+                m_PreviousTexID,
+                pos,
+                size,
+                m_SlideDirection,
+                m_AnimationSpeed,
+                m_Rotation
+            );
+        }
+        else if(m_AnimationSelector == 1){
+            MorphImage(
+                m_CurrentTexID,
+                m_PreviousTexID,
+                pos,
+                size,
+                m_AnimationSpeed,
+                m_Rotation
+            );
+		}
         
 
         // --- Mouse drag → smooth target rotation ---
-        if (ImGui::IsItemActive() && 0)
-        {
-            ImVec2 center = ImVec2(pos.x + size.x * 0.5f, pos.y + size.y * 0.5f);
-            ImVec2 mouse = ImGui::GetIO().MousePos;
+        //if (ImGui::IsItemActive() && 0)
+        //{
+        //    ImVec2 center = ImVec2(pos.x + size.x * 0.5f, pos.y + size.y * 0.5f);
+        //    ImVec2 mouse = ImGui::GetIO().MousePos;
 
-            float angle = atan2f(mouse.y - center.y, mouse.x - center.x);
-            m_TargetRotation = angle;
-        }
+        //    float angle = atan2f(mouse.y - center.y, mouse.x - center.x);
+        //    m_TargetRotation = angle;
+        //}
 
         if (ImGui::IsItemHovered())
             ImGui::SetTooltip("Click");
@@ -171,7 +197,7 @@ void ExampleLayer::OnUIRender() {
             
             ImGui::SliderFloat("Image Width", &m_TargetImgWidth, 128.0f, 512.0f);
             ImGui::SliderFloat("Image Height", &m_TargetImgHeight, 128.0f, 512.0f);
-            ImGui::SliderFloat("Image Morph", &m_AnimSpeed, 1.0f, 20.0f);
+            ImGui::SliderFloat("Image Animation speed", &m_AnimationSpeed, 1.0f, 20.0f);
 
             ImGui::Separator();
 
@@ -192,7 +218,7 @@ void ExampleLayer::OnUIRender() {
                 m_TargetImgWidth = 512.0f;
                 m_TargetImgHeight = 512.0f;
                 m_TargetRotation = 0.0f;
-                m_AnimSpeed = 10.0f;
+                m_AnimationSpeed = 10.0f;
             }
 
             ImGui::Separator();
