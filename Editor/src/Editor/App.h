@@ -74,6 +74,8 @@ namespace Editor
 
 		static Application& Get() { return *Instance; };
 
+		void RenderOneFrame(); // for refresh callback
+
 	private:
 		void Shutdown();
 

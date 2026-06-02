@@ -22,11 +22,13 @@ namespace Editor
 
 	void Application::Run()
 	{
+
+
 		while (m_Running)
 		{
-
 			float time = Time::GetTime();
 			Timestep timestep = time - lastFrameTime;
+
 			if (glfwGetWindowAttrib(static_cast<GLFWwindow*>(m_WindowHandle->GetNativeWindow()), GLFW_FOCUSED))
 				lastFrameTime = time;
 
@@ -39,10 +41,25 @@ namespace Editor
 				layer->OnUIRender();
 				layer->End();
 			}
+
 			m_WindowHandle->Update();
 		}
 		layer->OnDetach();
 		Shutdown();
+	}
+
+	void Application::RenderOneFrame()
+	{
+		// This mirrors the per-frame UI steps used in Run(), but performs only the UI render
+		// so it is safe to call from the refresh callback.
+		if (!layer)
+			return;
+
+		layer->Begin();
+		layer->dockSpace();
+		layer->UICallBackRender();
+		layer->OnUIRender();
+		layer->End();
 	}
 
 	void Application::Close()
