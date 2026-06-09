@@ -62,6 +62,8 @@ void menuUI(Editor::Application* app)
             if (ImGui::Checkbox("VSync", vsyncPtr)) {
                 app->SetVSync(*vsyncPtr);
             }
+			Timestep ts = app->GetTimestep();
+			ImGui::Text("Frame Time: %.3f ms (%.1f FPS)", ts.getMilliseconds(), 1.0f / ts.getSeconds());
 
             ImGui::Separator();
             const char* availableAnimations[] =
@@ -103,8 +105,8 @@ void ExampleLayer::onAttach()
 
 void ExampleLayer::OnUIRender() {
 
-#pragma region Test2_Window
-    ImGui::Begin("Test2 Window");
+#pragma region Test_Window
+    ImGui::Begin("Test Window");
 
     if (m_Next && m_Prev)
     {
@@ -164,17 +166,7 @@ void ExampleLayer::OnUIRender() {
                 m_Rotation
             );
 		}
-        
-
-        // --- Mouse drag → smooth target rotation ---
-        //if (ImGui::IsItemActive() && 0)
-        //{
-        //    ImVec2 center = ImVec2(pos.x + size.x * 0.5f, pos.y + size.y * 0.5f);
-        //    ImVec2 mouse = ImGui::GetIO().MousePos;
-
-        //    float angle = atan2f(mouse.y - center.y, mouse.x - center.x);
-        //    m_TargetRotation = angle;
-        //}
+       
 
         if (ImGui::IsItemHovered())
             ImGui::SetTooltip("Click");
@@ -240,5 +232,12 @@ void ExampleLayer::OnUIRender() {
 
     ImGui::End();
 #pragma endregion
+#ifdef DEBUG
+	ImGui::Begin("Debug Window");
+	ImGui::Text("FPS: %.1f, Frame Time: %.3f ms", 1.0f / this->app->GetTimestep(), this->app->GetTimestep().getMilliseconds());
+	ImGui::End();
+
+#endif // DEBUG
+
 
 }

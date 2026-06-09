@@ -3,10 +3,11 @@
 
 namespace Editor
 {
+	class Application;
 	class Layer
 	{
 	public:
-		Layer(const std::string& name = "Layer") : m_Name(name) {}
+		Layer(const std::string& name = "Layer") : m_Name(name), app(nullptr) {}
 		virtual ~Layer() = default;
 
 		void SetUICallBack(const std::function<void()>& UICallback) { m_UICallback = UICallback; }
@@ -29,11 +30,13 @@ namespace Editor
 		virtual void OnUIRender() {}
 
 		std::string GetName() const { return m_Name; }
+
+		Application* app;
+
 	private:
 		std::function<void()> m_UICallback;
 		bool m_dockSpace = false;
 		std::string m_Name;
-
 
 		friend class Application;
 	};

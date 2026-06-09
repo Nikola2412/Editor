@@ -101,9 +101,8 @@ namespace Editor
 			colors[ImGuiCol_HeaderHovered] = ImVec4(0.30f, 0.40f, 0.60f, 1.00f);
 		}
 
-		Application& app = Application::Get();
-
-		GLFWwindow* window = static_cast<GLFWwindow*>(app.GetWindow().GetNativeWindow());
+		this->app = Application::GetInstance();
+		GLFWwindow* window = static_cast<GLFWwindow*>(app->GetWindow().GetNativeWindow());
 
 		// Setup Platform/Renderer bindings
 		ImGui_ImplGlfw_InitForOpenGL(window, true);

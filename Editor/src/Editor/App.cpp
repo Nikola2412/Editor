@@ -23,14 +23,14 @@ namespace Editor
 	void Application::Run()
 	{
 
-
 		while (m_Running)
 		{
 			float time = Time::GetTime();
-			Timestep timestep = time - lastFrameTime;
+			timestep = time - lastFrameTime;
 
 			if (glfwGetWindowAttrib(static_cast<GLFWwindow*>(m_WindowHandle->GetNativeWindow()), GLFW_FOCUSED))
 				lastFrameTime = time;
+			
 
 			if (timestep.getSeconds() < 10 && !m_WindowHandle->isMinimized())
 			{

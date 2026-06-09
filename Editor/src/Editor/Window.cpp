@@ -140,8 +140,7 @@ namespace Editor {
 
 		minimized = (w == 0 || h == 0);
 
-		CORE_INFO("Resize: " + std::to_string(w) + "x" + std::to_string(h));
-
+		//CORE_INFO("Resize: " + std::to_string(w) + "x" + std::to_string(h));
 		glViewport(0, 0, w, h);
 	}
 	void Window::SetVSync(bool interval)

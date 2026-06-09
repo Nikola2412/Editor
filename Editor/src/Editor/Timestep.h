@@ -12,6 +12,8 @@ namespace Editor
 		float getSeconds() const { return time; };
 		float getMilliseconds() const { return time * 1000.0f; };
 
+		Timestep operator+(const Timestep& other) const { return Timestep(time + other.time); };
+
 	private:
 		float time;
 	};

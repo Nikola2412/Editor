@@ -66,13 +66,18 @@ namespace Editor
 		Ref<Layer> GetLayer() { return layer; };
 
 		template<typename T>
-		T* GetLayer() {
+		inline T* GetLayer() {
 			return dynamic_cast<T*>(layer.get());
 		}
+
+		inline Timestep GetTimestep() const { return timestep; }
 
 		void Close();
 
 		static Application& Get() { return *Instance; };
+
+		static Application* GetInstance() { return Instance; }
+
 
 		void RenderOneFrame(); // for refresh callback
 
@@ -89,7 +94,7 @@ namespace Editor
 		std::function<void()> m_UICallback;
 
 
-
+		Timestep timestep;
 	private:
 		static Application* Instance;
 	public:
