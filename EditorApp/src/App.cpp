@@ -63,7 +63,7 @@ void menuUI(Editor::Application* app)
                 app->SetVSync(*vsyncPtr);
             }
 			Timestep ts = app->GetTimestep();
-			ImGui::Text("Frame Time: %.3f ms (%.1f FPS)", ts.getMilliseconds(), 1.0f / ts.getSeconds());
+			ImGui::Text("Frame Time: %.3f ms (%d FPS)", ts.getMilliseconds(), app->GetFPS());
 
             ImGui::Separator();
             const char* availableAnimations[] =
@@ -234,7 +234,7 @@ void ExampleLayer::OnUIRender() {
 #pragma endregion
 #ifdef DEBUG
 	ImGui::Begin("Debug Window");
-	ImGui::Text("FPS: %.1f, Frame Time: %.3f ms", 1.0f / this->app->GetTimestep(), this->app->GetTimestep().getMilliseconds());
+	ImGui::Text("FPS: %d, Frame Time: %.3f ms", this->app->GetFPS(), this->app->GetTimestep().getMilliseconds());
 	ImGui::End();
 
 #endif // DEBUG
