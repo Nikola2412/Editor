@@ -20,6 +20,12 @@ namespace Editor
 		);
 	}
 
+	/*Application::~Application()
+	{
+		Shutdown();
+		Instance = nullptr;
+	}*/
+
 	void Application::Run()
 	{
 
@@ -33,33 +39,31 @@ namespace Editor
 			
 
 			if (timestep.getSeconds() < 10 && !m_WindowHandle->isMinimized())
-			{
-				layer->OnUpdate(timestep);
-				layer->Begin();
-				layer->dockSpace();
-				layer->UICallBackRender();
-				layer->OnUIRender();
-				layer->End();
-			}
+				RenderOneFrame();
 
 			m_WindowHandle->Update();
 		}
 		layer->OnDetach();
-		Shutdown();
+		//Shutdown();
 	}
 
 	void Application::RenderOneFrame()
 	{
 		// This mirrors the per-frame UI steps used in Run(), but performs only the UI render
 		// so it is safe to call from the refresh callback.
-		if (!layer)
+		if (!layer || m_RenderingFrame)
 			return;
 
+		m_RenderingFrame = true;
+		layer->OnUpdate(timestep);
 		layer->Begin();
 		layer->dockSpace();
 		layer->UICallBackRender();
 		layer->OnUIRender();
 		layer->End();
+		m_RenderingFrame = false;
+
+		//m_WindowHandle->Update();
 	}
 
 	void Application::Close()
@@ -69,6 +73,11 @@ namespace Editor
 
 	void Application::Shutdown()
 	{
-		delete m_WindowHandle;
+		if (m_WindowHandle)
+		{
+			delete m_WindowHandle;
+			m_WindowHandle = nullptr;
+		}
 	}
+
 }

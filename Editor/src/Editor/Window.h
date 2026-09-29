@@ -34,7 +34,7 @@ namespace Editor {
 		uint32_t GetWidth() const { return m_Data.Width; }
 		uint32_t GetHeight() const { return m_Data.Height; }
 
-		bool isMinimized() const { return minimized; }
+		bool isMinimized() const;
 
 		void Update();
 

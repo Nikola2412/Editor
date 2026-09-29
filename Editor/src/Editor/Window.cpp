@@ -19,27 +19,30 @@ namespace Editor {
 
 	static void on_window_size_callback(GLFWwindow* window, int width, int height)
 	{
-		auto m_W = static_cast<Window*>(glfwGetWindowUserPointer(window));
-		if (!m_W)
+		auto* appWindow = static_cast<Window*>(glfwGetWindowUserPointer(window));
+
+		if (!appWindow)
 			return;
-		glfwMakeContextCurrent(window);
-		glfwGetWindowSize(window, &width, &height);
-		m_W->Resize(width,height);
-		Application::Get().RenderOneFrame();
-		glfwSwapBuffers(window);
+
+		appWindow->Resize(width, height);
+	}
+
+	static void on_framebuffer_size_callback(GLFWwindow* window, int width, int height)
+	{
+		glViewport(0, 0, width, height);
+
+		auto* appWindow = static_cast<Window*>(glfwGetWindowUserPointer(window));
+
+		if (appWindow)
+			appWindow->Resize(width, height);
 	}
 
 	static void on_window_refresh_callback(GLFWwindow* window)
 	{
-		auto m_W = static_cast<Window*>(glfwGetWindowUserPointer(window));
-		if (!m_W)
+		auto* appWindow = static_cast<Window*>(glfwGetWindowUserPointer(window));
+
+		if (!appWindow)
 			return;
-
-		glfwMakeContextCurrent(window);
-
-		int w, h;
-		glfwGetFramebufferSize(window, &w, &h);
-		m_W->Resize((uint32_t)w, (uint32_t)h);
 
 		Application::Get().RenderOneFrame();
 
@@ -68,7 +71,7 @@ namespace Editor {
 		}
 
 		{
-			glfwWindowHint(GLFW_DECORATED, GLFW_TRUE);
+			glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
 			m_Window = glfwCreateWindow((int)spec.Width, (int)spec.Height, spec.Title.c_str(), nullptr, nullptr);
 			GLFWWindowCount++;
 		}
@@ -86,8 +89,9 @@ namespace Editor {
 		}
 
 		{
-			glfwSetFramebufferSizeCallback(m_Window, on_window_size_callback);
-			//glfwSetWindowRefreshCallback(m_Window, on_window_refresh_callback);
+			glfwSetWindowSizeCallback(m_Window, on_window_size_callback);
+			glfwSetFramebufferSizeCallback(m_Window, on_framebuffer_size_callback);
+			glfwSetWindowRefreshCallback(m_Window, on_window_refresh_callback);
 			glfwSetWindowCloseCallback(m_Window, on_window_close_callback);
 			// This callback is invoked when the window needs to be redrawn, including
 			// during native move/resize modal loops on some platforms (notably Windows).
@@ -131,6 +135,11 @@ namespace Editor {
 	{
 		glfwSwapBuffers(m_Window);
 		glfwPollEvents();
+	}
+
+	bool Window::isMinimized() const
+	{
+		return minimized || glfwGetWindowAttrib(m_Window, GLFW_ICONIFIED) == GLFW_TRUE;
 	}
 
 	void Window::Resize(uint32_t w, uint32_t h)

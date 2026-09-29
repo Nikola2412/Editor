@@ -90,6 +90,7 @@ namespace Editor
 		ApplicationSpecification m_Spec;
 		Window* m_WindowHandle;
 		bool m_Running = true;
+		bool m_RenderingFrame = false;
 		float lastFrameTime = 0.0f;
 
 		std::vector<Ref<Layer>> m_LayerStack;

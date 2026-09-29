@@ -1,25 +1,26 @@
 #include "App.h"
+#include <algorithm>
 
 Editor::Application* Editor::CreateApplication()
 {
-	Editor::ApplicationSpecification spec;
-	spec.Name = "Editor";
-	spec.Icon = "AppAssets/icon1.png";
-	spec.Width = 1600;
-	spec.Height = 900;
-	spec.VSync = true;
+    Editor::ApplicationSpecification spec;
+    spec.Name = "Editor";
+    spec.Icon = "AppAssets/icon1.png";
+    spec.Width = 1600;
+    spec.Height = 900;
+    spec.VSync = true;
 
-	Editor::Application* app = new Editor::Application(spec);
+    Editor::Application* app = new Editor::Application(spec);
 
-	auto layer = CreateRef<ExampleLayer>("layer1");
+    auto layer = CreateRef<ExampleLayer>("layer1");
 
-	app->SetLayer(layer);
-	layer->SetUICallBack([app]()
-		{
-			menuUI(app);
-		});
+    app->SetLayer(layer);
+    layer->SetUICallBack([app]()
+        {
+            menuUI(app);
+        });
 
-	return app;
+    return app;
 }
 
 void menuUI(Editor::Application* app)
@@ -37,10 +38,6 @@ void menuUI(Editor::Application* app)
                 CORE_WARN("File dialog was canceled or an error occurred.");
             }
         }
-        if (ImGui::MenuItem("Exit"))
-        {
-            app->Close();
-        }
         if (ImGui::MenuItem("Add")) {
             std::string s;
             if (FileDialog::OpenFile(PNG, s)) {
@@ -52,8 +49,6 @@ void menuUI(Editor::Application* app)
                 CORE_WARN("File dialog was canceled or an error occurred.");
             }
         }
-        if (ImGui::MenuItem("Settings"))
-            ImGui::OpenPopup("SettingsPopup");
 
         if (ImGui::BeginPopup("SettingsPopup"))
         {
@@ -62,9 +57,8 @@ void menuUI(Editor::Application* app)
             if (ImGui::Checkbox("VSync", vsyncPtr)) {
                 app->SetVSync(*vsyncPtr);
             }
-			Timestep ts = app->GetTimestep();
-			ImGui::Text("Frame Time: %.3f ms (%d FPS)", ts.getMilliseconds(), app->GetFPS());
-
+            Timestep ts = app->GetTimestep();
+            ImGui::Text("Frame Time: %.3f ms (%d FPS)", ts.getMilliseconds(), app->GetFPS());
             ImGui::Separator();
             const char* availableAnimations[] =
             {
@@ -81,71 +75,97 @@ void menuUI(Editor::Application* app)
         }
         ImGui::EndMenuBar();
     }
-
-    //ImGui::ShowDemoWindow();
 }
-
-
 
 void ExampleLayer::onAttach()
 {
-	m_Next = Texture2D::Load("assets/next.png");
-	m_Prev = Texture2D::Load("assets/prev.png");
+    m_Next = Texture2D::Load("assets/next.png");
+    m_Prev = Texture2D::Load("assets/prev.png");
 
-	m_TextureList.reserve(5);
+    m_TextureList.reserve(5);
 
-	AddTexture("assets/0.png");
-	AddTexture("assets/1.png");
-	AddTexture("assets/2.png");
-	AddTexture("assets/3.png");
+    AddTexture("assets/0.png");
+    AddTexture("assets/1.png");
+    AddTexture("assets/2.png");
+    AddTexture("assets/3.png");
     AddTexture("assets/4.png");
-    this->setImg();
 
+    this->setImg();
 }
 
-void ExampleLayer::OnUIRender() {
-
-#pragma region Test_Window
+void ExampleLayer::OnUIRender()
+{
     ImGui::Begin("Test Window");
+
+    if (m_AutoSlide && !m_TextureList.empty())
+    {
+        m_SlideTimer += ImGui::GetIO().DeltaTime;
+
+        if (m_SlideTimer >= m_SlideInterval)
+        {
+            m_SlideTimer = 0.0f;
+            nextImg(1);
+        }
+    }
 
     if (m_Next && m_Prev)
     {
-		AnimateImageRotation(m_Rotation, m_TargetRotation, m_RotationSpeed);
-        AnimateImageSize(m_ImgWidth, m_ImgHeight, m_TargetImgWidth, m_TargetImgHeight, m_SizeSpeed);
-		//AnimatedImage(m_Rotation, m_TargetRotation, m_RotationSpeed, m_ImgSize, m_TargetImgSize, m_SizeSpeed);
+        AnimateImageRotation(
+            m_Rotation,
+            m_TargetRotation,
+            m_RotationSpeed
+        );
+
+        AnimateImageSize(
+            m_ImgWidth,
+            m_ImgHeight,
+            m_TargetImgWidth,
+            m_TargetImgHeight,
+            m_SizeSpeed
+        );
 
         float btnSize = 20.0f;
         float spacing = ImGui::GetStyle().ItemSpacing.x;
 
-        float totalWidth = btnSize + spacing + m_ImgWidth + spacing + btnSize;
+        float totalWidth =
+            btnSize + spacing + m_ImgWidth + spacing + btnSize;
 
-        // Center horizontally
-        float startX = (ImGui::GetContentRegionAvail().x - totalWidth) * 0.5f;
+        float startX =
+            (ImGui::GetContentRegionAvail().x - totalWidth) * 0.5f;
+
         if (startX > 0.0f)
-            ImGui::SetCursorPosX(ImGui::GetCursorPosX() + startX);
+            ImGui::SetCursorPosX(
+                ImGui::GetCursorPosX() + startX
+            );
 
-        // Center vertically
         float totalHeight = m_ImgHeight;
-        float startY = (ImGui::GetContentRegionAvail().y - totalHeight) * 0.5f;
-        if (startY > 0.0f)
-            ImGui::SetCursorPosY(ImGui::GetCursorPosY() + startY);
 
-        // --- Prev Button ---
-        if (ImGui::ImageButton("prev", (ImTextureID)m_Prev->GetRendererID(), ImVec2(btnSize, btnSize)))
+        float startY =
+            (ImGui::GetContentRegionAvail().y - totalHeight) * 0.5f;
+
+        if (startY > 0.0f)
+            ImGui::SetCursorPosY(
+                ImGui::GetCursorPosY() + startY
+            );
+
+        if (ImGui::ImageButton(
+            "prev",
+            (ImTextureID)m_Prev->GetRendererID(),
+            ImVec2(btnSize, btnSize)))
         {
             nextImg(-1);
+            m_SlideTimer = 0.0f;
         }
+
         ImGui::SameLine();
 
-        // --- Image ---
         ImVec2 size(m_ImgWidth, m_ImgHeight);
         ImVec2 pos = ImGui::GetCursorScreenPos();
 
         ImGui::InvisibleButton("imgbtn", size);
 
-
-        // Draw rotated image
-        if (m_AnimationSelector == 0) {
+        if (m_AnimationSelector == 0)
+        {
             SlideImage(
                 m_CurrentTexID,
                 m_PreviousTexID,
@@ -156,7 +176,8 @@ void ExampleLayer::OnUIRender() {
                 m_Rotation
             );
         }
-        else if(m_AnimationSelector == 1){
+        else if (m_AnimationSelector == 1)
+        {
             MorphImage(
                 m_CurrentTexID,
                 m_PreviousTexID,
@@ -165,8 +186,7 @@ void ExampleLayer::OnUIRender() {
                 m_AnimationSpeed,
                 m_Rotation
             );
-		}
-       
+        }
 
         if (ImGui::IsItemHovered())
             ImGui::SetTooltip("Click");
@@ -176,32 +196,91 @@ void ExampleLayer::OnUIRender() {
 
         ImGui::SameLine();
 
-        // --- Next Button ---
-        if (ImGui::ImageButton("next", (ImTextureID)m_Next->GetRendererID(), ImVec2(btnSize, btnSize)))
+        if (ImGui::ImageButton(
+            "next",
+            (ImTextureID)m_Next->GetRendererID(),
+            ImVec2(btnSize, btnSize)))
         {
             nextImg(1);
+            m_SlideTimer = 0.0f;
         }
 
         if (ImGui::BeginPopup("ImageSettings"))
         {
-
             ImGui::Text("Image Settings");
-            
-            ImGui::SliderFloat("Image Width", &m_TargetImgWidth, 128.0f, 512.0f);
-            ImGui::SliderFloat("Image Height", &m_TargetImgHeight, 128.0f, 512.0f);
-            ImGui::SliderFloat("Image Animation speed", &m_AnimationSpeed, 1.0f, 20.0f);
+
+            ImGui::SliderFloat(
+                "Image Width",
+                &m_TargetImgWidth,
+                128.0f,
+                512.0f
+            );
+
+            ImGui::SliderFloat(
+                "Image Height",
+                &m_TargetImgHeight,
+                128.0f,
+                512.0f
+            );
+
+            ImGui::SliderFloat(
+                "Image Animation speed",
+                &m_AnimationSpeed,
+                1.0f,
+                20.0f
+            );
 
             ImGui::Separator();
 
-            ImGui::SliderAngle("Rotation", &m_TargetRotation);
+            ImGui::Checkbox("Auto Slide", &m_AutoSlide);
 
-            if (ImGui::Button("0°"))   m_TargetRotation = 0.0f;
+            if (m_AutoSlide)
+            {
+                ImGui::SliderFloat(
+                    "Slide Timer",
+                    &m_SlideInterval,
+                    0.5f,
+                    30.0f,
+                    "%.1f seconds"
+                );
+
+                float progress = 0.0f;
+
+                if (m_SlideInterval > 0.0f)
+                    progress = m_SlideTimer / m_SlideInterval;
+
+                progress = std::clamp(progress, 0.0f, 1.0f);
+
+                ImGui::ProgressBar(
+                    progress,
+                    ImVec2(-1.0f, 0.0f)
+                );
+            }
+
+            ImGui::Separator();
+
+            ImGui::SliderAngle(
+                "Rotation",
+                &m_TargetRotation
+            );
+
+            if (ImGui::Button("0°"))
+                m_TargetRotation = 0.0f;
+
             ImGui::SameLine();
-            if (ImGui::Button("90°"))  m_TargetRotation = MY_PI * 0.5f;
+
+            if (ImGui::Button("90°"))
+                m_TargetRotation = MY_PI * 0.5f;
+
             ImGui::SameLine();
-            if (ImGui::Button("180°")) m_TargetRotation = MY_PI;
+
+            if (ImGui::Button("180°"))
+                m_TargetRotation = MY_PI;
+
             ImGui::SameLine();
-            if (ImGui::Button("270°")) m_TargetRotation = MY_PI * 1.5f;
+
+            if (ImGui::Button("270°"))
+                m_TargetRotation = MY_PI * 1.5f;
 
             ImGui::Separator();
 
@@ -211,6 +290,10 @@ void ExampleLayer::OnUIRender() {
                 m_TargetImgHeight = 512.0f;
                 m_TargetRotation = 0.0f;
                 m_AnimationSpeed = 10.0f;
+
+                m_AutoSlide = false;
+                m_SlideTimer = 0.0f;
+                m_SlideInterval = 3.0f;
             }
 
             ImGui::Separator();
@@ -218,6 +301,7 @@ void ExampleLayer::OnUIRender() {
             if (ImGui::Button("Delete"))
             {
                 m_TextureList.erase(m_ListID);
+                m_SlideTimer = 0.0f;
                 nextImg(0);
             }
 
@@ -231,13 +315,18 @@ void ExampleLayer::OnUIRender() {
     }
 
     ImGui::End();
-#pragma endregion
+
 #ifdef DEBUG
-	ImGui::Begin("Debug Window");
-	ImGui::Text("FPS: %d, Frame Time: %.3f ms", this->app->GetFPS(), this->app->GetTimestep().getMilliseconds());
-	ImGui::End();
 
-#endif // DEBUG
+    ImGui::Begin("Debug Window");
 
+    ImGui::Text(
+        "FPS: %d, Frame Time: %.3f ms",
+        this->app->GetFPS(),
+        this->app->GetTimestep().getMilliseconds()
+    );
 
+    ImGui::End();
+
+#endif
 }

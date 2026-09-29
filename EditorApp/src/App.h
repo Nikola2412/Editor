@@ -62,6 +62,9 @@ private:
 
 
 	float m_AnimationSpeed = 10.0f;
+	bool m_AutoSlide = true;
+	float m_SlideTimer = 0.0f;
+	float m_SlideInterval = 3.0f;
 
 
 	SlideDirection m_SlideDirection = SlideDirection::R;
