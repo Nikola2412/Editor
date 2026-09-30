@@ -58,7 +58,7 @@ namespace Editor
 		layer->OnUpdate(timestep);
 		layer->Begin();
 		layer->dockSpace();
-		layer->UICallBackRender();
+		//layer->UICallBackRender();
 		layer->OnUIRender();
 		layer->End();
 		m_RenderingFrame = false;

@@ -28,8 +28,8 @@ namespace Editor
 	void Layer::OnAttach()
 	{
 		//std::cout << "Layer: " << this->GetName() << " attached" << '\n';
-		CORE_INFO("Layer: " + this->GetName() + " attached");
-		
+		CORE_INFO("Layer: {0} attached", this->GetName());
+
 		// Setup Dear ImGui context
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
@@ -113,7 +113,7 @@ namespace Editor
 		}
 
 		this->app = Application::GetInstance();
-		GLFWwindow* window = static_cast<GLFWwindow*>(app->GetWindow().GetNativeWindow());
+		this->window = static_cast<GLFWwindow*>(app->GetWindow().GetNativeWindow());
 		glfwGetWindowPos(window, &m_restoreBounds.x, &m_restoreBounds.y);
 		glfwGetWindowSize(window, &m_restoreBounds.width, &m_restoreBounds.height);
 		if (loadWindowBounds(m_restoreBounds))
@@ -159,13 +159,13 @@ namespace Editor
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
-
-		applicationDecoration();
+		updateWindowAnimation();
+		updateWindowResize(window);
 	}
 	void Layer::End()
 	{
 
-		if(m_dockSpace)
+		if (m_dockSpace)
 			ImGui::End();
 		ImGuiIO& io = ImGui::GetIO();
 		Application& app = Application::Get();
@@ -196,19 +196,11 @@ namespace Editor
 
 		// We are using the ImGuiWindowFlags_NoDocking flag to make the parent window not dockable into,
 		// because it would be confusing to have two docking targets within each others.
-		ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDocking;
-		
-		window_flags |= ImGuiWindowFlags_MenuBar;
+		ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_MenuBar;
 
 		const ImGuiViewport* viewport = ImGui::GetMainViewport();
-		ImGui::SetNextWindowPos(ImVec2(
-			viewport->WorkPos.x,
-			viewport->WorkPos.y + ApplicationTitleBarHeight
-		));
-		ImGui::SetNextWindowSize(ImVec2(
-			viewport->WorkSize.x,
-			viewport->WorkSize.y - ApplicationTitleBarHeight
-		));
+		ImGui::SetNextWindowPos(viewport->Pos);
+		ImGui::SetNextWindowSize(viewport->Size);
 		ImGui::SetNextWindowViewport(viewport->ID);
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
@@ -225,10 +217,14 @@ namespace Editor
 		// all active windows docked into it will lose their parent and become undocked.
 		// We cannot preserve the docking relationship between an active window and an inactive docking, otherwise
 		// any change of dockspace/settings would lead to windows being stuck in limbo and never being visible.
+		const float menuBarPaddingY = (ApplicationTitleBarHeight - ImGui::GetFontSize()) * 0.5f;
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding,
+			ImVec2(ImGui::GetStyle().FramePadding.x, menuBarPaddingY));
 		ImGui::Begin("DockSpace Demo", nullptr, window_flags);
 		m_dockSpace = true;
-		ImGui::PopStyleVar();
+		applicationDecoration();
+		ImGui::PopStyleVar(2);
 
 		ImGui::PopStyleVar(2);
 
@@ -250,7 +246,7 @@ namespace Editor
 	}
 	void Layer::startWindowAnimation(const WindowBounds& target, float targetOpacity, bool minimizeAtEnd)
 	{
-		GLFWwindow* window = static_cast<GLFWwindow*>(app->GetWindow().GetNativeWindow());
+
 		glfwGetWindowPos(window, &m_animationStartBounds.x, &m_animationStartBounds.y);
 		glfwGetWindowSize(window, &m_animationStartBounds.width, &m_animationStartBounds.height);
 
@@ -276,7 +272,7 @@ namespace Editor
 
 	void Layer::saveWindowBounds()
 	{
-		GLFWwindow* window = static_cast<GLFWwindow*>(app->GetWindow().GetNativeWindow());
+
 		WindowBounds bounds;
 		if (m_maximized)
 			bounds = m_restoreBounds;
@@ -296,7 +292,7 @@ namespace Editor
 		std::ofstream stateFile("window-state.ini", std::ios::trunc);
 		if (stateFile)
 			stateFile << bounds.x << ' ' << bounds.y << ' '
-				<< bounds.width << ' ' << bounds.height << '\n';
+			<< bounds.width << ' ' << bounds.height << '\n';
 	}
 
 	void Layer::toggleMaximize()
@@ -311,7 +307,7 @@ namespace Editor
 			return;
 		}
 
-		GLFWwindow* window = static_cast<GLFWwindow*>(app->GetWindow().GetNativeWindow());
+
 		glfwGetWindowPos(window, &m_restoreBounds.x, &m_restoreBounds.y);
 		glfwGetWindowSize(window, &m_restoreBounds.width, &m_restoreBounds.height);
 		if (m_restoreBounds.width <= 0 || m_restoreBounds.height <= 0)
@@ -356,7 +352,7 @@ namespace Editor
 
 	void Layer::updateWindowAnimation()
 	{
-		GLFWwindow* window = static_cast<GLFWwindow*>(app->GetWindow().GetNativeWindow());
+
 
 		if (m_minimizePending && !glfwGetWindowAttrib(window, GLFW_ICONIFIED))
 		{
@@ -526,258 +522,241 @@ namespace Editor
 	{
 		GLFWwindow* window =
 			static_cast<GLFWwindow*>(app->GetWindow().GetNativeWindow());
-		updateWindowAnimation();
-		updateWindowResize(window);
-
-		const ImGuiViewport* viewport = ImGui::GetMainViewport();
-
-		ImGui::SetNextWindowPos(
-			ImVec2(viewport->Pos.x, viewport->Pos.y)
-		);
-
-		ImGui::SetNextWindowSize(
-			ImVec2(viewport->Size.x, ApplicationTitleBarHeight)
-		);
-
-		ImGuiWindowFlags flags =
-			ImGuiWindowFlags_NoDecoration |
-			ImGuiWindowFlags_NoDocking |
-			ImGuiWindowFlags_NoMove |
-			ImGuiWindowFlags_NoSavedSettings |
-			ImGuiWindowFlags_NoBringToFrontOnFocus;
-
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
-
-		ImGui::Begin("##ApplicationTitleBar", nullptr, flags);
 
 		ImDrawList* drawList = ImGui::GetWindowDrawList();
 
 		const ImVec2 windowPos = ImGui::GetWindowPos();
 		const ImVec2 windowSize = ImGui::GetWindowSize();
 		const float buttonWidth = 45.0f;
-
-		ImGui::SetCursorPos(ImVec2(static_cast<float>(WindowResizeBorder), static_cast<float>(WindowResizeBorder)));
-		ImGui::InvisibleButton(
-			"##TitleBarDrag",
-			ImVec2(windowSize.x - buttonWidth * 3.0f - WindowResizeBorder * 2.0f,
-				ApplicationTitleBarHeight - WindowResizeBorder)
+		drawList->AddRectFilled(
+			windowPos,
+			ImVec2(windowPos.x + windowSize.x, windowPos.y + ApplicationTitleBarHeight),
+			IM_COL32(18, 20, 25, 255)
 		);
-
-		const bool titleBarClicked = ImGui::IsItemHovered() &&
-			ImGui::IsMouseClicked(ImGuiMouseButton_Left);
-		if (titleBarClicked && !m_resizingWindow && !m_windowAnimationActive && !m_minimizePending)
+		drawList->AddLine(
+			ImVec2(windowPos.x, windowPos.y + ApplicationTitleBarHeight - 1),
+			ImVec2(windowPos.x + windowSize.x, windowPos.y + ApplicationTitleBarHeight - 1),
+			IM_COL32(45, 48, 58, 255)
+		);
+		ImGui::PushStyleColor(ImGuiCol_MenuBarBg, ImVec4(18.0f / 255.0f, 20.0f / 255.0f, 25.0f / 255.0f, 1.0f));
+		if (ImGui::BeginMenuBar())
 		{
-			if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+			UICallBackRender();
+
+			const ImVec2 mousePosition = ImGui::GetMousePos();
+			const bool overWindowControls = mousePosition.x >=
+				windowPos.x + windowSize.x - buttonWidth * 3.0f;
+			const bool overTitleBar = mousePosition.y >= windowPos.y &&
+				mousePosition.y < windowPos.y + ApplicationTitleBarHeight;
+			const bool titleBarClicked = overTitleBar && ImGui::IsWindowHovered() &&
+				!ImGui::IsAnyItemHovered() && !overWindowControls &&
+				ImGui::IsMouseClicked(ImGuiMouseButton_Left);
+			if (titleBarClicked && !m_resizingWindow && !m_windowAnimationActive && !m_minimizePending)
+			{
+				if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+				{
+					toggleMaximize();
+					m_draggingWindow = false;
+				}
+				else
+				{
+					glfwGetWindowPos(window, &m_dragStartWindowX, &m_dragStartWindowY);
+					double cursorX = 0.0;
+					double cursorY = 0.0;
+					glfwGetCursorPos(window, &cursorX, &cursorY);
+					m_dragStartMouseX = m_dragStartWindowX + cursorX;
+					m_dragStartMouseY = m_dragStartWindowY + cursorY;
+					m_draggingWindow = true;
+				}
+			}
+
+			if (m_draggingWindow)
+			{
+				if (ImGui::IsMouseDown(ImGuiMouseButton_Left))
+				{
+					int currentWindowX = 0;
+					int currentWindowY = 0;
+					glfwGetWindowPos(window, &currentWindowX, &currentWindowY);
+					double cursorX = 0.0;
+					double cursorY = 0.0;
+					glfwGetCursorPos(window, &cursorX, &cursorY);
+					const double screenX = currentWindowX + cursorX;
+					const double screenY = currentWindowY + cursorY;
+
+					if (m_maximized &&
+						(std::abs(screenX - m_dragStartMouseX) > 3.0 ||
+							std::abs(screenY - m_dragStartMouseY) > 3.0))
+					{
+						int currentWidth = 0;
+						glfwGetWindowSize(window, &currentWidth, nullptr);
+						const double cursorRatio = currentWidth > 0
+							? (m_dragStartMouseX - m_dragStartWindowX) / currentWidth
+							: 0.5;
+						const double titleBarOffset = m_dragStartMouseY - m_dragStartWindowY;
+						const int restoredWidth = m_restoreBounds.width > 0
+							? m_restoreBounds.width : currentWidth;
+						const int restoredHeight = m_restoreBounds.height > 0
+							? m_restoreBounds.height : ApplicationTitleBarHeight;
+						m_dragStartWindowX = static_cast<int>(screenX - restoredWidth * cursorRatio);
+						m_dragStartWindowY = static_cast<int>(screenY - titleBarOffset);
+						glfwSetWindowSize(window, restoredWidth, restoredHeight);
+						glfwSetWindowPos(window, m_dragStartWindowX, m_dragStartWindowY);
+						m_dragStartMouseX = screenX;
+						m_dragStartMouseY = screenY;
+						m_maximized = false;
+						m_restoreBounds.x = m_dragStartWindowX;
+						m_restoreBounds.y = m_dragStartWindowY;
+					}
+					else if (!m_maximized)
+					{
+						glfwSetWindowPos(
+							window,
+							m_dragStartWindowX + static_cast<int>(screenX - m_dragStartMouseX),
+							m_dragStartWindowY + static_cast<int>(screenY - m_dragStartMouseY)
+						);
+					}
+				}
+				else
+				{
+					m_draggingWindow = false;
+					if (!m_maximized)
+					{
+						glfwGetWindowPos(window, &m_restoreBounds.x, &m_restoreBounds.y);
+						glfwGetWindowSize(window, &m_restoreBounds.width, &m_restoreBounds.height);
+					}
+				}
+			}
+
+			// Application name
+			ImGui::SetCursorPos(ImVec2(12.0f, 0.0f));
+
+			ImGui::PushStyleColor(
+				ImGuiCol_Text,
+				ImVec4(0.85f, 0.87f, 0.92f, 1.0f)
+			);
+
+			ImGui::PopStyleColor();
+
+			// ---------------------------------------------------------
+			// Window buttons
+			// ---------------------------------------------------------
+
+			const float controlsStartX = windowPos.x + windowSize.x - buttonWidth * 3.0f;
+			ImGui::SetCursorScreenPos(ImVec2(controlsStartX, windowPos.y));
+
+			// Minimize
+			if (ImGui::Button("##Minimize", ImVec2(buttonWidth, ApplicationTitleBarHeight)))
+			{
+				if (!m_windowAnimationActive && !m_minimizePending)
+				{
+					glfwGetWindowPos(window, &m_minimizeRestoreBounds.x, &m_minimizeRestoreBounds.y);
+					glfwGetWindowSize(window, &m_minimizeRestoreBounds.width, &m_minimizeRestoreBounds.height);
+					m_minimizeRestoreMaximized = m_maximized;
+
+					WindowBounds minimizedBounds = m_minimizeRestoreBounds;
+					const int minimizedWidth = minimizedBounds.width > 72 ? 72 : minimizedBounds.width;
+					const int minimizedHeight = minimizedBounds.height > 48 ? 48 : minimizedBounds.height;
+					minimizedBounds.x += (minimizedBounds.width - minimizedWidth) / 2;
+					minimizedBounds.y += (minimizedBounds.height - minimizedHeight) / 2;
+					minimizedBounds.width = minimizedWidth;
+					minimizedBounds.height = minimizedHeight;
+					startWindowAnimation(minimizedBounds, 0.0f, true);
+				}
+			}
+
+			// Draw minimize icon
+			{
+				ImVec2 min = ImGui::GetItemRectMin();
+				ImVec2 max = ImGui::GetItemRectMax();
+
+				float cx = (min.x + max.x) * 0.5f;
+				float cy = (min.y + max.y) * 0.5f;
+
+				drawList->AddLine(
+					ImVec2(cx - 7, cy + 3),
+					ImVec2(cx + 7, cy + 3),
+					IM_COL32(210, 210, 215, 255),
+					1.5f
+				);
+			}
+
+			// Maximize / restore
+			ImGui::SetCursorScreenPos(ImVec2(controlsStartX + buttonWidth, windowPos.y));
+			if (ImGui::Button("##Maximize", ImVec2(buttonWidth, ApplicationTitleBarHeight)))
 			{
 				toggleMaximize();
-				m_draggingWindow = false;
 			}
-			else
-			{
-				glfwGetWindowPos(window, &m_dragStartWindowX, &m_dragStartWindowY);
-				double cursorX = 0.0;
-				double cursorY = 0.0;
-				glfwGetCursorPos(window, &cursorX, &cursorY);
-				m_dragStartMouseX = m_dragStartWindowX + cursorX;
-				m_dragStartMouseY = m_dragStartWindowY + cursorY;
-				m_draggingWindow = true;
-			}
-		}
 
-		if (m_draggingWindow)
-		{
-			if (ImGui::IsMouseDown(ImGuiMouseButton_Left))
 			{
-				int currentWindowX = 0;
-				int currentWindowY = 0;
-				glfwGetWindowPos(window, &currentWindowX, &currentWindowY);
-				double cursorX = 0.0;
-				double cursorY = 0.0;
-				glfwGetCursorPos(window, &cursorX, &cursorY);
-				const double screenX = currentWindowX + cursorX;
-				const double screenY = currentWindowY + cursorY;
+				ImVec2 min = ImGui::GetItemRectMin();
+				ImVec2 max = ImGui::GetItemRectMax();
 
-				if (m_maximized &&
-					(std::abs(screenX - m_dragStartMouseX) > 3.0 ||
-						std::abs(screenY - m_dragStartMouseY) > 3.0))
+				float cx = (min.x + max.x) * 0.5f;
+				float cy = (min.y + max.y) * 0.5f;
+
+				if (m_maximized)
 				{
-					int currentWidth = 0;
-					glfwGetWindowSize(window, &currentWidth, nullptr);
-					const double cursorRatio = currentWidth > 0
-						? (m_dragStartMouseX - m_dragStartWindowX) / currentWidth
-						: 0.5;
-					const double titleBarOffset = m_dragStartMouseY - m_dragStartWindowY;
-					const int restoredWidth = m_restoreBounds.width > 0
-						? m_restoreBounds.width : currentWidth;
-					const int restoredHeight = m_restoreBounds.height > 0
-						? m_restoreBounds.height : ApplicationTitleBarHeight;
-					m_dragStartWindowX = static_cast<int>(screenX - restoredWidth * cursorRatio);
-					m_dragStartWindowY = static_cast<int>(screenY - titleBarOffset);
-					glfwSetWindowSize(window, restoredWidth, restoredHeight);
-					glfwSetWindowPos(window, m_dragStartWindowX, m_dragStartWindowY);
-					m_dragStartMouseX = screenX;
-					m_dragStartMouseY = screenY;
-					m_maximized = false;
-					m_restoreBounds.x = m_dragStartWindowX;
-					m_restoreBounds.y = m_dragStartWindowY;
+					drawList->AddRect(
+						ImVec2(cx - 2, cy - 6),
+						ImVec2(cx + 6, cy + 2),
+						IM_COL32(210, 210, 215, 255),
+						0.0f,
+						0,
+						1.5f
+					);
+					drawList->AddRect(
+						ImVec2(cx - 6, cy - 2),
+						ImVec2(cx + 2, cy + 6),
+						IM_COL32(210, 210, 215, 255),
+						0.0f,
+						0,
+						1.5f
+					);
 				}
-				else if (!m_maximized)
+				else
 				{
-					glfwSetWindowPos(
-						window,
-						m_dragStartWindowX + static_cast<int>(screenX - m_dragStartMouseX),
-						m_dragStartWindowY + static_cast<int>(screenY - m_dragStartMouseY)
+					drawList->AddRect(
+						ImVec2(cx - 6, cy - 5),
+						ImVec2(cx + 6, cy + 5),
+						IM_COL32(210, 210, 215, 255),
+						0.0f,
+						0,
+						1.5f
 					);
 				}
 			}
-			else
+
+			// Close
+			ImGui::SetCursorScreenPos(ImVec2(controlsStartX + buttonWidth * 2.0f, windowPos.y));
+			if (ImGui::Button("##Close", ImVec2(buttonWidth, ApplicationTitleBarHeight)))
 			{
-				m_draggingWindow = false;
-				if (!m_maximized)
-				{
-					glfwGetWindowPos(window, &m_restoreBounds.x, &m_restoreBounds.y);
-					glfwGetWindowSize(window, &m_restoreBounds.width, &m_restoreBounds.height);
-				}
+				app->Close();
 			}
+
+			{
+				ImVec2 min = ImGui::GetItemRectMin();
+				ImVec2 max = ImGui::GetItemRectMax();
+
+				float cx = (min.x + max.x) * 0.5f;
+				float cy = (min.y + max.y) * 0.5f;
+
+				drawList->AddLine(
+					ImVec2(cx - 6, cy - 6),
+					ImVec2(cx + 6, cy + 6),
+					IM_COL32(220, 220, 225, 255),
+					1.5f
+				);
+
+				drawList->AddLine(
+					ImVec2(cx + 6, cy - 6),
+					ImVec2(cx - 6, cy + 6),
+					IM_COL32(220, 220, 225, 255),
+					1.5f
+				);
+			}
+			ImGui::EndMenuBar();
 		}
-
-		// Background
-		drawList->AddRectFilled(
-			windowPos,
-			ImVec2(
-				windowPos.x + windowSize.x,
-				windowPos.y + ApplicationTitleBarHeight
-			),
-			IM_COL32(18, 20, 25, 255)
-		);
-
-		// Bottom separator
-		drawList->AddLine(
-			ImVec2(windowPos.x, windowPos.y + ApplicationTitleBarHeight - 1),
-			ImVec2(windowPos.x + windowSize.x,
-				windowPos.y + ApplicationTitleBarHeight - 1),
-			IM_COL32(45, 48, 58, 255)
-		);
-
-		// Application name
-		ImGui::SetCursorPos(ImVec2(12.0f, 0.0f));
-
-		ImGui::PushStyleColor(
-			ImGuiCol_Text,
-			ImVec4(0.85f, 0.87f, 0.92f, 1.0f)
-		);
-
 		ImGui::PopStyleColor();
-
-		// ---------------------------------------------------------
-		// Window buttons
-		// ---------------------------------------------------------
-
-		ImGui::SetCursorPos(
-			ImVec2(
-				windowSize.x - buttonWidth * 3.0f,
-				0.0f
-			)
-		);
-
-		// Minimize
-		if (ImGui::Button("##Minimize", ImVec2(buttonWidth, ApplicationTitleBarHeight)))
-		{
-			if (!m_windowAnimationActive && !m_minimizePending)
-			{
-				glfwGetWindowPos(window, &m_minimizeRestoreBounds.x, &m_minimizeRestoreBounds.y);
-				glfwGetWindowSize(window, &m_minimizeRestoreBounds.width, &m_minimizeRestoreBounds.height);
-				m_minimizeRestoreMaximized = m_maximized;
-
-				WindowBounds minimizedBounds = m_minimizeRestoreBounds;
-				const int minimizedWidth = minimizedBounds.width > 72 ? 72 : minimizedBounds.width;
-				const int minimizedHeight = minimizedBounds.height > 48 ? 48 : minimizedBounds.height;
-				minimizedBounds.x += (minimizedBounds.width - minimizedWidth) / 2;
-				minimizedBounds.y += (minimizedBounds.height - minimizedHeight) / 2;
-				minimizedBounds.width = minimizedWidth;
-				minimizedBounds.height = minimizedHeight;
-				startWindowAnimation(minimizedBounds, 0.0f, true);
-			}
-		}
-
-		// Draw minimize icon
-		{
-			ImVec2 min = ImGui::GetItemRectMin();
-			ImVec2 max = ImGui::GetItemRectMax();
-
-			float cx = (min.x + max.x) * 0.5f;
-			float cy = (min.y + max.y) * 0.5f;
-
-			drawList->AddLine(
-				ImVec2(cx - 7, cy + 3),
-				ImVec2(cx + 7, cy + 3),
-				IM_COL32(210, 210, 215, 255),
-				1.5f
-			);
-		}
-
-		ImGui::SameLine(0, 0);
-
-		// Maximize / restore
-		if (ImGui::Button("##Maximize", ImVec2(buttonWidth, ApplicationTitleBarHeight)))
-		{
-			toggleMaximize();
-		}
-
-		{
-			ImVec2 min = ImGui::GetItemRectMin();
-			ImVec2 max = ImGui::GetItemRectMax();
-
-			float cx = (min.x + max.x) * 0.5f;
-			float cy = (min.y + max.y) * 0.5f;
-
-			drawList->AddRect(
-				ImVec2(cx - 6, cy - 5),
-				ImVec2(cx + 6, cy + 5),
-				IM_COL32(210, 210, 215, 255),
-				0.0f,
-				0,
-				1.5f
-			);
-		}
-
-		ImGui::SameLine(0, 0);
-
-		// Close
-		if (ImGui::Button("##Close", ImVec2(buttonWidth, ApplicationTitleBarHeight)))
-		{
-			app->Close();
-		}
-
-		{
-			ImVec2 min = ImGui::GetItemRectMin();
-			ImVec2 max = ImGui::GetItemRectMax();
-
-			float cx = (min.x + max.x) * 0.5f;
-			float cy = (min.y + max.y) * 0.5f;
-
-			drawList->AddLine(
-				ImVec2(cx - 6, cy - 6),
-				ImVec2(cx + 6, cy + 6),
-				IM_COL32(220, 220, 225, 255),
-				1.5f
-			);
-
-			drawList->AddLine(
-				ImVec2(cx + 6, cy - 6),
-				ImVec2(cx - 6, cy + 6),
-				IM_COL32(220, 220, 225, 255),
-				1.5f
-			);
-		}
-
-
-
-		ImGui::End();
-
-		ImGui::PopStyleVar(3);
 	}
 
 }

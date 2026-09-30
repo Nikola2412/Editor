@@ -40,6 +40,7 @@ namespace Editor
 		std::function<void()> m_UICallback;
 		bool m_dockSpace = false;
 		std::string m_Name;
+		GLFWwindow* window;
 
 		friend class Application;
 

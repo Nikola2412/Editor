@@ -139,7 +139,7 @@ namespace Editor {
 
 	bool Window::isMinimized() const
 	{
-		return minimized || glfwGetWindowAttrib(m_Window, GLFW_ICONIFIED) == GLFW_TRUE;
+		return minimized;// || glfwGetWindowAttrib(m_Window, GLFW_ICONIFIED) == GLFW_TRUE;
 	}
 
 	void Window::Resize(uint32_t w, uint32_t h)
@@ -149,7 +149,7 @@ namespace Editor {
 
 		minimized = (w == 0 || h == 0);
 
-		//CORE_INFO("Resize: " + std::to_string(w) + "x" + std::to_string(h));
+		//CORE_INFO("Resize: {0} {1}", std::to_string(w), std::to_string(h));
 		glViewport(0, 0, w, h);
 	}
 	void Window::SetVSync(bool interval)

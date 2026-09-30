@@ -25,55 +25,51 @@ Editor::Application* Editor::CreateApplication()
 
 void menuUI(Editor::Application* app)
 {
-    if (ImGui::BeginMenuBar())
+    if (ImGui::MenuItem("Save"))
     {
-        if (ImGui::MenuItem("Save"))
+        std::string s;
+        if (FileDialog::SaveFile(PNG, s)) {
+            Ref<Texture2D> tex = (app->GetLayer<ExampleLayer>())->GetCurrentTexture();
+            int res = tex->Save(s);
+        }
+        else {
+            CORE_WARN("File dialog was canceled or an error occurred.");
+        }
+    }
+    if (ImGui::MenuItem("Add")) {
+        std::string s;
+        if (FileDialog::OpenFile(PNG, s)) {
+            CORE_INFO("Selected file: {}", s);
+            (app->GetLayer<ExampleLayer>())->AddTexture(s);
+        }
+        else
         {
-            std::string s;
-            if (FileDialog::SaveFile(PNG, s)) {
-                Ref<Texture2D> tex = (app->GetLayer<ExampleLayer>())->GetCurrentTexture();
-                int res = tex->Save(s);
-            }
-            else {
-                CORE_WARN("File dialog was canceled or an error occurred.");
-            }
+            CORE_WARN("File dialog was canceled or an error occurred.");
         }
-        if (ImGui::MenuItem("Add")) {
-            std::string s;
-            if (FileDialog::OpenFile(PNG, s)) {
-                CORE_INFO("Selected file: {}", s);
-                (app->GetLayer<ExampleLayer>())->AddTexture(s);
-            }
-            else
-            {
-                CORE_WARN("File dialog was canceled or an error occurred.");
-            }
-        }
+    }
 
-        if (ImGui::BeginPopup("SettingsPopup"))
+    if (ImGui::BeginPopup("SettingsPopup"))
+    {
+        bool* vsyncPtr = &(app->GetLayer<ExampleLayer>()->vSync);
+        ImGui::Text("Settings");
+        if (ImGui::Checkbox("VSync", vsyncPtr)) {
+            app->SetVSync(*vsyncPtr);
+        }
+        Timestep ts = app->GetTimestep();
+        ImGui::Text("Frame Time: %.3f ms (%d FPS)", ts.getMilliseconds(), app->GetFPS());
+        ImGui::Separator();
+        const char* availableAnimations[] =
         {
-            bool* vsyncPtr = &(app->GetLayer<ExampleLayer>()->vSync);
-            ImGui::Text("Settings");
-            if (ImGui::Checkbox("VSync", vsyncPtr)) {
-                app->SetVSync(*vsyncPtr);
-            }
-            Timestep ts = app->GetTimestep();
-            ImGui::Text("Frame Time: %.3f ms (%d FPS)", ts.getMilliseconds(), app->GetFPS());
-            ImGui::Separator();
-            const char* availableAnimations[] =
-            {
-                "Slide Animation",
-                "Morph Animation"
-            };
+            "Slide Animation",
+            "Morph Animation"
+        };
 
-            ImGui::Text("Choose animation type:");
-            ImGui::Combo("##animation_combo",
-                &(app->GetLayer<ExampleLayer>()->m_AnimationSelector),
-                availableAnimations,
-                IM_ARRAYSIZE(availableAnimations));
-            ImGui::EndPopup();
-        }
-        ImGui::EndMenuBar();
+        ImGui::Text("Choose animation type:");
+        ImGui::Combo("##animation_combo",
+            &(app->GetLayer<ExampleLayer>()->m_AnimationSelector),
+            availableAnimations,
+            IM_ARRAYSIZE(availableAnimations));
+        ImGui::EndPopup();
     }
 }
 
