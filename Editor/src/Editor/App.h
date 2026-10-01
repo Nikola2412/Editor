@@ -30,9 +30,6 @@ namespace Editor
 		~Application() = default;
 
 		void Run();
-		//void SetUICallBack(const std::function<void()>& UICallback) { m_UICallback = UICallback; }//needs imgui
-
-		Window& GetWindow() { return *m_WindowHandle; };
 
 		template<typename T>
 		void PushLayer()
@@ -65,22 +62,42 @@ namespace Editor
 
 		Ref<Layer> GetLayer() { return layer; };
 
-		void Close();
+		template<typename T>
+		inline T* GetLayer() {
+			return dynamic_cast<T*>(layer.get());
+		}
+
+		inline Timestep GetTimestep() const { return timestep; }
 
 		static Application& Get() { return *Instance; };
 
-	private:
+		static Application* GetInstance() { return Instance; }
+
+		Window& GetWindow() { return *m_WindowHandle; };
+
+
+		int GetFPS() const { return timestep.getSeconds() > 0 ? static_cast<int>(1.0f / timestep.getSeconds()) : 0; }
+
+		void RenderOneFrame(); // for refresh callback
+
+		void Close();
+
+	protected:
 		void Shutdown();
+
 
 	private:
 		ApplicationSpecification m_Spec;
 		Window* m_WindowHandle;
 		bool m_Running = true;
+		bool m_RenderingFrame = false;
 		float lastFrameTime = 0.0f;
 
 		std::vector<Ref<Layer>> m_LayerStack;
 		std::function<void()> m_UICallback;
 
+
+		Timestep timestep;
 	private:
 		static Application* Instance;
 	public:

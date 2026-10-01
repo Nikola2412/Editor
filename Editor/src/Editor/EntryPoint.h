@@ -7,9 +7,8 @@
 
 namespace Editor {
 
-	int Main(int argc, char** argv)
+	int Main()
 	{
-		Log::Init();
 		auto app = Editor::CreateApplication();
 		app->Run();
 		delete app;
@@ -21,16 +20,23 @@ namespace Editor {
 
 #include <Windows.h>
 
-int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, PSTR cmdline, int cmdshow)
+int APIENTRY WinMain(
+	HINSTANCE hInstance,
+	HINSTANCE hPrevInstance,
+	LPSTR lpCmdLine,
+	int nCmdShow)
 {
-	return Editor::Main(__argc, __argv);
+	return Editor::Main();
 }
+
 
 #else
 
 int main(int argc, char** argv)
 {
-	return Editor::Main(argc, argv);
+	Editor::Log::Init();
+
+	return Editor::Main();
 }
 
 #endif // DIST

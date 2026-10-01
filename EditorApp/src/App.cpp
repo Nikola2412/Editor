@@ -24,33 +24,30 @@ Editor::Application* Editor::CreateApplication()
 
 void menuUI(Editor::Application* app)
 {
-	if (ImGui::BeginMenuBar())
+	if (ImGui::MenuItem("Save"))
 	{
-		if (ImGui::MenuItem("Save"))
-		{
-			app->Close();
-		}
-		if (ImGui::MenuItem("Exit"))
-		{
-			app->Close();
-		}
-		
-        if(ImGui::MenuItem("Settings"))
-            ImGui::OpenPopup("SettingsPopup");
-        
-        if (ImGui::BeginPopup("SettingsPopup"))
-        {
-            bool* vsyncPtr = &((ExampleLayer*)app->layer.get())->vSync;
-            ImGui::Text("Settings");
-            if (ImGui::Checkbox("VSync", vsyncPtr)) {
-				app->SetVSync(*vsyncPtr);
-            }
-            ImGui::EndPopup();
-        }
-		ImGui::EndMenuBar();
+		app->Close();
+	}
+	if (ImGui::MenuItem("Exit"))
+	{
+		app->Close();
 	}
 
-	//ImGui::ShowDemoWindow();
+	if (ImGui::MenuItem("Settings"))
+		ImGui::OpenPopup("SettingsPopup");
+
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(16.0f, 16.0f));
+	if (ImGui::BeginPopup("SettingsPopup"))
+	{
+		bool* vsyncPtr = &((ExampleLayer*)app->layer.get())->vSync;
+		ImGui::Text("Settings");
+		if (ImGui::Checkbox("VSync", vsyncPtr)) {
+			app->SetVSync(*vsyncPtr);
+		}
+		ImGui::EndPopup();
+	}
+	ImGui::PopStyleVar();
+
 }
 
 
@@ -62,5 +59,5 @@ void ExampleLayer::onAttach()
 }
 
 void ExampleLayer::OnUIRender() {
-
+	ImGui::ShowDemoWindow();
 }

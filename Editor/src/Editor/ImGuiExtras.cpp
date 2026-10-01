@@ -46,6 +46,7 @@ namespace ImGui
 
     void DrawCircularImage(ImTextureID texture, ImVec2 center, float radius, float angle, ImU32 tint)
     {
+        
         ImDrawList* draw = ImGui::GetWindowDrawList();
 
         const int segments = 64;
@@ -91,19 +92,19 @@ namespace ImGui
         );
     }
 
-    void startMorph()
+    void MorphImage(ImTextureID currentTex, ImTextureID prevTex, const ImVec2& pos, const ImVec2& size, float& morphSpeed, float angle)
     {
-        morph = 0.0f; 
-        isMorphing = true;
-    }
-
-    void MorphImage(ImTextureID currentTex, ImTextureID prevTex, ImVec2 pos, ImVec2 size, float& morphSpeed, float angle)
-    {
+		if (currentTex != m_CurrentTexture)
+        {
+            m_CurrentTexture = currentTex;
+            morph = 0.0f;
+            isMorphing = true;
+        }
         ImDrawList* draw = ImGui::GetWindowDrawList();
 
         if (isMorphing)
         {
-            morph += IM_DELTA_TIME * morphSpeed;
+            morph += IM_DELTA_TIME * morphSpeed / 4;
 
             if (morph >= 1.0f)
             {
@@ -144,16 +145,17 @@ namespace ImGui
         }
     }
 
-    void startSlide(int direction, float width)
-    {
-        isSliding = true;
-        m_SlideOffset = 0.0f;
-        m_SlideDirection = -direction;
-        m_TargetSlideOffset =  width;
-    }
 
-    void SlideImage(ImTextureID currentTex, ImTextureID previousTex, const ImVec2& pos, const ImVec2& size, float& speed, float rotation)
+    void SlideImage(ImTextureID currentTex, ImTextureID previousTex, const ImVec2& pos, const ImVec2& size, SlideDirection direction, float& speed, float rotation)
     {
+        if (m_CurrentTexture != currentTex)
+        {
+            m_CurrentTexture = currentTex;
+            isSliding = true;
+            m_SlideOffset = 0.0f;
+            m_SlideDirection = -direction;
+            m_TargetSlideOffset = size.x;
+        }
         if (isSliding)
         {
             float dt = ImGui::GetIO().DeltaTime;

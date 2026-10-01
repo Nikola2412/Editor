@@ -5,6 +5,8 @@
 #include <glad/glad.h>
 #include <stb_image.h>
 
+#include "Log.h"
+
 #include "App.h"
 
 namespace Editor {
@@ -17,8 +19,34 @@ namespace Editor {
 
 	static void on_window_size_callback(GLFWwindow* window, int width, int height)
 	{
-		auto m_W = static_cast<Window*>(glfwGetWindowUserPointer(window));
-		m_W->Resize(width,height);
+		auto* appWindow = static_cast<Window*>(glfwGetWindowUserPointer(window));
+
+		if (!appWindow)
+			return;
+
+		appWindow->Resize(width, height);
+	}
+
+	static void on_framebuffer_size_callback(GLFWwindow* window, int width, int height)
+	{
+		glViewport(0, 0, width, height);
+
+		auto* appWindow = static_cast<Window*>(glfwGetWindowUserPointer(window));
+
+		if (appWindow)
+			appWindow->Resize(width, height);
+	}
+
+	static void on_window_refresh_callback(GLFWwindow* window)
+	{
+		auto* appWindow = static_cast<Window*>(glfwGetWindowUserPointer(window));
+
+		if (!appWindow)
+			return;
+
+		Application::Get().RenderOneFrame();
+
+		glfwSwapBuffers(window);
 	}
 
 	static void on_window_close_callback(GLFWwindow* window)
@@ -33,6 +61,7 @@ namespace Editor {
 
 	void Window::Init(const WindowProps& spec)
 	{
+		printf("%s\n", glfwGetVersionString());
 		m_Data = spec;
 
 		if (GLFWWindowCount == 0)
@@ -42,7 +71,7 @@ namespace Editor {
 		}
 
 		{
-			glfwWindowHint(GLFW_DECORATED, GLFW_TRUE);
+			glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
 			m_Window = glfwCreateWindow((int)spec.Width, (int)spec.Height, spec.Title.c_str(), nullptr, nullptr);
 			GLFWWindowCount++;
 		}
@@ -61,7 +90,11 @@ namespace Editor {
 
 		{
 			glfwSetWindowSizeCallback(m_Window, on_window_size_callback);
+			glfwSetFramebufferSizeCallback(m_Window, on_framebuffer_size_callback);
+			glfwSetWindowRefreshCallback(m_Window, on_window_refresh_callback);
 			glfwSetWindowCloseCallback(m_Window, on_window_close_callback);
+			// This callback is invoked when the window needs to be redrawn, including
+			// during native move/resize modal loops on some platforms (notably Windows).
 
 			glfwMakeContextCurrent(m_Window);
 
@@ -73,7 +106,7 @@ namespace Editor {
 
 		if (!status)
 		{
-			Log::GetCoreLogger()->Error("Failed to initialize OpenGL context!");
+			CORE_ERROR("Failed to initialize OpenGL context!");
 			exit(-1);
 		}
 
@@ -94,15 +127,19 @@ namespace Editor {
 		if (GLFWWindowCount == 0)
 		{
 			glfwTerminate();
-			//std::cout << "Terminating GLFW\n";
 			CORE_INFO("Terminating GLFW");
 		}
 	}
 
 	void Window::Update()
 	{
-		glfwPollEvents();
 		glfwSwapBuffers(m_Window);
+		glfwPollEvents();
+	}
+
+	bool Window::isMinimized() const
+	{
+		return minimized;// || glfwGetWindowAttrib(m_Window, GLFW_ICONIFIED) == GLFW_TRUE;
 	}
 
 	void Window::Resize(uint32_t w, uint32_t h)
@@ -112,7 +149,8 @@ namespace Editor {
 
 		minimized = (w == 0 || h == 0);
 
-		glViewport(0, 0, m_Data.Width, m_Data.Height);
+		//CORE_INFO("Resize: {0} {1}", std::to_string(w), std::to_string(h));
+		glViewport(0, 0, w, h);
 	}
 	void Window::SetVSync(bool interval)
 	{
