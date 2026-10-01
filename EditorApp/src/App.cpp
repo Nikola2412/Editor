@@ -47,7 +47,11 @@ void menuUI(Editor::Application* app)
             CORE_WARN("File dialog was canceled or an error occurred.");
         }
     }
+    if (ImGui::MenuItem("Settings")) {
+		ImGui::OpenPopup("SettingsPopup");
+    }
 
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(16.0f, 16.0f));
     if (ImGui::BeginPopup("SettingsPopup"))
     {
         bool* vsyncPtr = &(app->GetLayer<ExampleLayer>()->vSync);
@@ -71,6 +75,7 @@ void menuUI(Editor::Application* app)
             IM_ARRAYSIZE(availableAnimations));
         ImGui::EndPopup();
     }
+    ImGui::PopStyleVar();
 }
 
 void ExampleLayer::onAttach()
