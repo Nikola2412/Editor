@@ -2,6 +2,17 @@
 #include "Window.h"
 
 #include <GLFW/glfw3.h>
+#ifdef _WIN32
+#define GLFW_EXPOSE_NATIVE_WIN32
+#include <GLFW/glfw3native.h>
+#elif defined(__APPLE__)
+#define GLFW_EXPOSE_NATIVE_COCOA
+#include <GLFW/glfw3native.h>
+#elif defined(__linux__)
+#define GLFW_EXPOSE_NATIVE_X11
+#include <GLFW/glfw3native.h>
+#include <X11/Xatom.h>
+#endif
 #include <glad/glad.h>
 #include <stb_image.h>
 
@@ -16,6 +27,80 @@ namespace Editor {
 	double dragStartX, dragStartY;
 	int winStartX, winStartY;
 	static uint8_t GLFWWindowCount = 0;
+
+#ifdef _WIN32
+	static WNDPROC glfwWindowProc = nullptr;
+
+	static LRESULT CALLBACK borderlessWindowProc(HWND window, UINT message, WPARAM wParam, LPARAM lParam)
+	{
+		if (message == WM_NCCALCSIZE)
+		{
+			if (wParam && (GetWindowLongPtrW(window, GWL_STYLE) & WS_MAXIMIZE))
+			{
+				auto* params = reinterpret_cast<NCCALCSIZE_PARAMS*>(lParam);
+				MONITORINFO monitorInfo = { sizeof(monitorInfo) };
+				const HMONITOR monitor = MonitorFromWindow(window, MONITOR_DEFAULTTONEAREST);
+				if (GetMonitorInfoW(monitor, &monitorInfo))
+					params->rgrc[0] = monitorInfo.rcWork;
+			}
+			return 0;
+		}
+
+		if (message == WM_NCPAINT)
+			return 0;
+
+		if (message == WM_NCACTIVATE)
+			return TRUE;
+
+		return CallWindowProcW(glfwWindowProc, window, message, wParam, lParam);
+	}
+
+	static bool enableNativeBorderlessFrame(GLFWwindow* glfwWindow)
+	{
+		HWND window = glfwGetWin32Window(glfwWindow);
+		const LONG_PTR style = GetWindowLongPtrW(window, GWL_STYLE);
+		const LONG_PTR nativeStyle = (style & ~WS_POPUP) | WS_OVERLAPPEDWINDOW;
+
+		SetLastError(ERROR_SUCCESS);
+		const LONG_PTR previousProc = SetWindowLongPtrW(
+			window,
+			GWLP_WNDPROC,
+			reinterpret_cast<LONG_PTR>(borderlessWindowProc));
+		if (!previousProc && GetLastError() != ERROR_SUCCESS)
+		{
+			CORE_ERROR("Failed to enable native borderless window handling: {}", GetLastError());
+			return false;
+		}
+
+		glfwWindowProc = reinterpret_cast<WNDPROC>(previousProc);
+
+		SetLastError(ERROR_SUCCESS);
+		SetWindowLongPtrW(window, GWL_STYLE, nativeStyle);
+		if (GetLastError() != ERROR_SUCCESS)
+		{
+			CORE_ERROR("Failed to apply native window styles: {}", GetLastError());
+			SetWindowLongPtrW(window, GWLP_WNDPROC, previousProc);
+			glfwWindowProc = nullptr;
+			return false;
+		}
+
+		if (!SetWindowPos(window, nullptr, 0, 0, 0, 0,
+			SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED))
+		{
+			CORE_ERROR("Failed to refresh native window styles: {}", GetLastError());
+			SetWindowLongPtrW(window, GWL_STYLE, style);
+			SetWindowLongPtrW(window, GWLP_WNDPROC, previousProc);
+			glfwWindowProc = nullptr;
+			return false;
+		}
+
+		return true;
+	}
+#endif
+
+#if defined(__APPLE__)
+extern "C" bool EditorStartCocoaWindowMove(void* nativeWindow);
+#endif
 
 	static void on_window_size_callback(GLFWwindow* window, int width, int height)
 	{
@@ -75,6 +160,10 @@ namespace Editor {
 			m_Window = glfwCreateWindow((int)spec.Width, (int)spec.Height, spec.Title.c_str(), nullptr, nullptr);
 			GLFWWindowCount++;
 		}
+
+#ifdef _WIN32
+		enableNativeBorderlessFrame(m_Window);
+#endif
 
 		glfwSetWindowUserPointer(m_Window, this);
 
@@ -159,5 +248,88 @@ namespace Editor {
 		CORE_INFO("VSync: " + std::string(interval ? "Enabled" : "Disabled"));
 
 		m_Data.VSync = interval;
+	}
+
+	bool Window::StartNativeMove()
+	{
+#ifdef _WIN32
+		const HWND window = glfwGetWin32Window(m_Window);
+		POINT cursorPosition;
+		if (!GetCursorPos(&cursorPosition))
+		{
+			CORE_ERROR("Failed to get cursor position for native window move: {}", GetLastError());
+			return false;
+		}
+
+		ReleaseCapture();
+		SendMessageW(
+			window,
+			WM_NCLBUTTONDOWN,
+			HTCAPTION,
+			MAKELPARAM(cursorPosition.x, cursorPosition.y));
+		return true;
+#elif defined(__APPLE__)
+		if (!EditorStartCocoaWindowMove(glfwGetCocoaWindow(m_Window)))
+		{
+			CORE_WARN("AppKit could not start a native window move; using the GLFW fallback.");
+			return false;
+		}
+		return true;
+#elif defined(__linux__)
+		if (glfwGetPlatform() != GLFW_PLATFORM_X11)
+		{
+			static bool warnedAboutWayland = false;
+			if (!warnedAboutWayland)
+			{
+				CORE_WARN("Native title-bar dragging is unavailable on Wayland with this GLFW backend.");
+				warnedAboutWayland = true;
+			}
+			return false;
+		}
+
+		Display* display = glfwGetX11Display();
+		const ::Window x11Window = glfwGetX11Window(m_Window);
+		if (!display || !x11Window)
+		{
+			CORE_WARN("Could not access the native X11 window; using the GLFW fallback.");
+			return false;
+		}
+
+		int windowX = 0;
+		int windowY = 0;
+		double cursorX = 0.0;
+		double cursorY = 0.0;
+		glfwGetWindowPos(m_Window, &windowX, &windowY);
+		glfwGetCursorPos(m_Window, &cursorX, &cursorY);
+
+		XEvent event = {};
+		event.xclient.type = ClientMessage;
+		event.xclient.window = x11Window;
+		const Atom moveResize = XInternAtom(display, "_NET_WM_MOVERESIZE", False);
+		if (moveResize == None)
+			return false;
+		event.xclient.message_type = moveResize;
+		event.xclient.format = 32;
+		event.xclient.data.l[0] = windowX + static_cast<int>(cursorX);
+		event.xclient.data.l[1] = windowY + static_cast<int>(cursorY);
+		event.xclient.data.l[2] = 8;
+		event.xclient.data.l[3] = Button1;
+		event.xclient.data.l[4] = 1;
+
+		if (!XSendEvent(
+			display,
+			DefaultRootWindow(display),
+			False,
+			SubstructureRedirectMask | SubstructureNotifyMask,
+			&event))
+		{
+			CORE_WARN("The X11 window manager rejected the native move request.");
+			return false;
+		}
+		XFlush(display);
+		return true;
+#else
+		return false;
+#endif
 	}
 }

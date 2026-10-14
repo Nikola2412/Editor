@@ -9,7 +9,6 @@
 
 #include <cmath>
 #include <fstream>
-#include <limits>
 
 #include <GLFW/glfw3.h>
 #include <glad/glad.h>
@@ -21,7 +20,6 @@ namespace Editor
 	namespace
 	{
 		constexpr float ApplicationTitleBarHeight = 35.0f;
-		constexpr double WindowAnimationDurationSeconds = 0.28;
 		constexpr int WindowResizeBorder = 6;
 	}
 
@@ -159,7 +157,17 @@ namespace Editor
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
-		updateWindowAnimation();
+		updateMinimizeState();
+		if (m_nativeMoveTracking && !ImGui::IsMouseDown(ImGuiMouseButton_Left))
+		{
+			m_nativeMoveTracking = false;
+			m_maximized = glfwGetWindowAttrib(window, GLFW_MAXIMIZED) == GLFW_TRUE;
+			if (!m_maximized)
+			{
+				glfwGetWindowPos(window, &m_restoreBounds.x, &m_restoreBounds.y);
+				glfwGetWindowSize(window, &m_restoreBounds.width, &m_restoreBounds.height);
+			}
+		}
 		updateWindowResize(window);
 	}
 	void Layer::End()
@@ -244,20 +252,6 @@ namespace Editor
 			m_UICallback();
 		}
 	}
-	void Layer::startWindowAnimation(const WindowBounds& target, float targetOpacity, bool minimizeAtEnd)
-	{
-
-		glfwGetWindowPos(window, &m_animationStartBounds.x, &m_animationStartBounds.y);
-		glfwGetWindowSize(window, &m_animationStartBounds.width, &m_animationStartBounds.height);
-
-		m_animationTargetBounds = target;
-		m_animationStartOpacity = glfwGetWindowOpacity(window);
-		m_animationTargetOpacity = targetOpacity;
-		m_animationElapsedSeconds = 0.0f;
-		m_minimizeAfterAnimation = minimizeAtEnd;
-		m_windowAnimationActive = true;
-	}
-
 	bool Layer::loadWindowBounds(WindowBounds& bounds)
 	{
 		std::ifstream stateFile("window-state.ini");
@@ -276,10 +270,8 @@ namespace Editor
 		WindowBounds bounds;
 		if (m_maximized)
 			bounds = m_restoreBounds;
-		else if (m_minimizePending || (m_windowAnimationActive && m_minimizeAfterAnimation))
+		else if (m_minimizePending)
 			bounds = m_minimizeRestoreBounds;
-		else if (m_windowAnimationActive)
-			bounds = m_animationTargetBounds;
 		else
 		{
 			glfwGetWindowPos(window, &bounds.x, &bounds.y);
@@ -297,108 +289,31 @@ namespace Editor
 
 	void Layer::toggleMaximize()
 	{
-		if (m_windowAnimationActive || m_minimizePending)
+		if (m_minimizePending)
 			return;
 
 		if (m_maximized)
 		{
 			m_maximized = false;
-			startWindowAnimation(m_restoreBounds, 1.0f, false);
+			glfwRestoreWindow(window);
 			return;
 		}
-
 
 		glfwGetWindowPos(window, &m_restoreBounds.x, &m_restoreBounds.y);
 		glfwGetWindowSize(window, &m_restoreBounds.width, &m_restoreBounds.height);
 		if (m_restoreBounds.width <= 0 || m_restoreBounds.height <= 0)
 			return;
 
-		int windowCenterX = m_restoreBounds.x + m_restoreBounds.width / 2;
-		int windowCenterY = m_restoreBounds.y + m_restoreBounds.height / 2;
-		int monitorCount = 0;
-		GLFWmonitor** monitors = glfwGetMonitors(&monitorCount);
-		GLFWmonitor* targetMonitor = glfwGetPrimaryMonitor();
-		long long nearestDistance = (std::numeric_limits<long long>::max)();
-
-		for (int index = 0; index < monitorCount; ++index)
-		{
-			int areaX = 0;
-			int areaY = 0;
-			int areaWidth = 0;
-			int areaHeight = 0;
-			glfwGetMonitorWorkarea(monitors[index], &areaX, &areaY, &areaWidth, &areaHeight);
-
-			const int dx = windowCenterX < areaX ? areaX - windowCenterX :
-				windowCenterX > areaX + areaWidth ? windowCenterX - areaX - areaWidth : 0;
-			const int dy = windowCenterY < areaY ? areaY - windowCenterY :
-				windowCenterY > areaY + areaHeight ? windowCenterY - areaY - areaHeight : 0;
-			const long long distance = static_cast<long long>(dx) * dx + static_cast<long long>(dy) * dy;
-			if (distance < nearestDistance)
-			{
-				nearestDistance = distance;
-				targetMonitor = monitors[index];
-			}
-		}
-
-		if (!targetMonitor)
-			return;
-
-		WindowBounds targetBounds;
-		glfwGetMonitorWorkarea(targetMonitor, &targetBounds.x, &targetBounds.y,
-			&targetBounds.width, &targetBounds.height);
 		m_maximized = true;
-		startWindowAnimation(targetBounds, 1.0f, false);
+		glfwMaximizeWindow(window);
 	}
 
-	void Layer::updateWindowAnimation()
+	void Layer::updateMinimizeState()
 	{
-
-
 		if (m_minimizePending && !glfwGetWindowAttrib(window, GLFW_ICONIFIED))
 		{
 			m_minimizePending = false;
 			m_maximized = m_minimizeRestoreMaximized;
-			glfwSetWindowOpacity(window, 0.0f);
-			startWindowAnimation(m_minimizeRestoreBounds, 1.0f, false);
-		}
-
-		if (!m_windowAnimationActive)
-			return;
-
-		m_animationElapsedSeconds += ImGui::GetIO().DeltaTime;
-		float progress = m_animationElapsedSeconds /
-			static_cast<float>(WindowAnimationDurationSeconds);
-		if (progress < 0.0f)
-			progress = 0.0f;
-		if (progress > 1.0f)
-			progress = 1.0f;
-		const float easedProgress = progress * progress * (3.0f - 2.0f * progress);
-
-		const int x = static_cast<int>(m_animationStartBounds.x +
-			(m_animationTargetBounds.x - m_animationStartBounds.x) * easedProgress);
-		const int y = static_cast<int>(m_animationStartBounds.y +
-			(m_animationTargetBounds.y - m_animationStartBounds.y) * easedProgress);
-		const int width = static_cast<int>(m_animationStartBounds.width +
-			(m_animationTargetBounds.width - m_animationStartBounds.width) * easedProgress);
-		const int height = static_cast<int>(m_animationStartBounds.height +
-			(m_animationTargetBounds.height - m_animationStartBounds.height) * easedProgress);
-		const float opacity = m_animationStartOpacity +
-			(m_animationTargetOpacity - m_animationStartOpacity) * easedProgress;
-
-		glfwSetWindowPos(window, x, y);
-		glfwSetWindowSize(window, width > 0 ? width : 1, height > 0 ? height : 1);
-		glfwSetWindowOpacity(window, opacity);
-
-		if (progress >= 1.0f)
-		{
-			m_windowAnimationActive = false;
-			const bool minimize = m_minimizeAfterAnimation;
-			m_minimizeAfterAnimation = false;
-			if (minimize)
-			{
-				m_minimizePending = true;
-				glfwIconifyWindow(window);
-			}
 		}
 	}
 
@@ -412,7 +327,7 @@ namespace Editor
 		constexpr int MinimumHeight = 200;
 
 		const ImGuiIO& io = ImGui::GetIO();
-		const bool canResize = !m_maximized && !m_windowAnimationActive && !m_minimizePending;
+		const bool canResize = !m_maximized && !m_minimizePending;
 		int windowX = 0;
 		int windowY = 0;
 		int windowWidth = 0;
@@ -548,26 +463,33 @@ namespace Editor
 				windowPos.x + windowSize.x - buttonWidth * 3.0f;
 			const bool overTitleBar = mousePosition.y >= windowPos.y &&
 				mousePosition.y < windowPos.y + ApplicationTitleBarHeight;
-			const bool titleBarClicked = overTitleBar && ImGui::IsWindowHovered() &&
-				!ImGui::IsAnyItemHovered() && !overWindowControls &&
+			const bool titleBarHit = overTitleBar && ImGui::IsWindowHovered() &&
+				!ImGui::IsAnyItemHovered() && !overWindowControls;
+			const bool titleBarDoubleClicked = titleBarHit &&
+				ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left);
+			const bool titleBarClicked = titleBarHit &&
 				ImGui::IsMouseClicked(ImGuiMouseButton_Left);
-			if (titleBarClicked && !m_resizingWindow && !m_windowAnimationActive && !m_minimizePending)
+			if (titleBarDoubleClicked && !m_resizingWindow && !m_minimizePending)
 			{
-				if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+				toggleMaximize();
+				m_draggingWindow = false;
+				m_nativeMoveTracking = false;
+			}
+			else if (titleBarClicked && !m_resizingWindow && !m_minimizePending)
+			{
+				glfwGetWindowPos(window, &m_dragStartWindowX, &m_dragStartWindowY);
+				double cursorX = 0.0;
+				double cursorY = 0.0;
+				glfwGetCursorPos(window, &cursorX, &cursorY);
+				m_dragStartMouseX = m_dragStartWindowX + cursorX;
+				m_dragStartMouseY = m_dragStartWindowY + cursorY;
+				if (glfwGetWindowAttrib(window, GLFW_MAXIMIZED) != GLFW_TRUE)
 				{
-					toggleMaximize();
-					m_draggingWindow = false;
+					glfwGetWindowPos(window, &m_restoreBounds.x, &m_restoreBounds.y);
+					glfwGetWindowSize(
+						window, &m_restoreBounds.width, &m_restoreBounds.height);
 				}
-				else
-				{
-					glfwGetWindowPos(window, &m_dragStartWindowX, &m_dragStartWindowY);
-					double cursorX = 0.0;
-					double cursorY = 0.0;
-					glfwGetCursorPos(window, &cursorX, &cursorY);
-					m_dragStartMouseX = m_dragStartWindowX + cursorX;
-					m_dragStartMouseY = m_dragStartWindowY + cursorY;
-					m_draggingWindow = true;
-				}
+				m_draggingWindow = true;
 			}
 
 			if (m_draggingWindow)
@@ -599,6 +521,7 @@ namespace Editor
 							? m_restoreBounds.height : ApplicationTitleBarHeight;
 						m_dragStartWindowX = static_cast<int>(screenX - restoredWidth * cursorRatio);
 						m_dragStartWindowY = static_cast<int>(screenY - titleBarOffset);
+						glfwRestoreWindow(window);
 						glfwSetWindowSize(window, restoredWidth, restoredHeight);
 						glfwSetWindowPos(window, m_dragStartWindowX, m_dragStartWindowY);
 						m_dragStartMouseX = screenX;
@@ -609,11 +532,22 @@ namespace Editor
 					}
 					else if (!m_maximized)
 					{
-						glfwSetWindowPos(
-							window,
-							m_dragStartWindowX + static_cast<int>(screenX - m_dragStartMouseX),
-							m_dragStartWindowY + static_cast<int>(screenY - m_dragStartMouseY)
-						);
+						const double dragDistanceX = screenX - m_dragStartMouseX;
+						const double dragDistanceY = screenY - m_dragStartMouseY;
+						if (dragDistanceX * dragDistanceX + dragDistanceY * dragDistanceY > 9.0 &&
+							app->GetWindow().StartNativeMove())
+						{
+							m_nativeMoveTracking = true;
+							m_draggingWindow = false;
+						}
+						else
+						{
+							const int targetX = m_dragStartWindowX +
+								static_cast<int>(dragDistanceX);
+							const int targetY = m_dragStartWindowY +
+								static_cast<int>(dragDistanceY);
+							glfwSetWindowPos(window, targetX, targetY);
+						}
 					}
 				}
 				else
@@ -623,6 +557,35 @@ namespace Editor
 					{
 						glfwGetWindowPos(window, &m_restoreBounds.x, &m_restoreBounds.y);
 						glfwGetWindowSize(window, &m_restoreBounds.width, &m_restoreBounds.height);
+
+						int windowX = 0;
+						int windowY = 0;
+						double localCursorX = 0.0;
+						double localCursorY = 0.0;
+						glfwGetWindowPos(window, &windowX, &windowY);
+						glfwGetCursorPos(window, &localCursorX, &localCursorY);
+						const int cursorX = windowX + static_cast<int>(localCursorX);
+						const int cursorY = windowY + static_cast<int>(localCursorY);
+
+						int monitorCount = 0;
+						GLFWmonitor** monitors = glfwGetMonitors(&monitorCount);
+						for (int index = 0; index < monitorCount; ++index)
+						{
+							int workX = 0;
+							int workY = 0;
+							int workWidth = 0;
+							int workHeight = 0;
+							glfwGetMonitorWorkarea(
+								monitors[index], &workX, &workY, &workWidth, &workHeight);
+
+							if (cursorX >= workX && cursorX < workX + workWidth &&
+								cursorY <= workY + 2)
+							{
+								m_maximized = true;
+								glfwMaximizeWindow(window);
+								break;
+							}
+						}
 					}
 				}
 			}
@@ -647,20 +610,13 @@ namespace Editor
 			// Minimize
 			if (ImGui::Button("##Minimize", ImVec2(buttonWidth, ApplicationTitleBarHeight)))
 			{
-				if (!m_windowAnimationActive && !m_minimizePending)
+				if (!m_minimizePending)
 				{
 					glfwGetWindowPos(window, &m_minimizeRestoreBounds.x, &m_minimizeRestoreBounds.y);
 					glfwGetWindowSize(window, &m_minimizeRestoreBounds.width, &m_minimizeRestoreBounds.height);
 					m_minimizeRestoreMaximized = m_maximized;
-
-					WindowBounds minimizedBounds = m_minimizeRestoreBounds;
-					const int minimizedWidth = minimizedBounds.width > 72 ? 72 : minimizedBounds.width;
-					const int minimizedHeight = minimizedBounds.height > 48 ? 48 : minimizedBounds.height;
-					minimizedBounds.x += (minimizedBounds.width - minimizedWidth) / 2;
-					minimizedBounds.y += (minimizedBounds.height - minimizedHeight) / 2;
-					minimizedBounds.width = minimizedWidth;
-					minimizedBounds.height = minimizedHeight;
-					startWindowAnimation(minimizedBounds, 0.0f, true);
+					m_minimizePending = true;
+					glfwIconifyWindow(window);
 				}
 			}
 

@@ -55,26 +55,19 @@ namespace Editor
 		};
 
 		void toggleMaximize();
-		void startWindowAnimation(const WindowBounds& target, float targetOpacity, bool minimizeAtEnd);
-		void updateWindowAnimation();
+		void updateMinimizeState();
 		void updateWindowResize(GLFWwindow* window);
 		bool loadWindowBounds(WindowBounds& bounds);
 		void saveWindowBounds();
 
 		bool m_maximized = false;
-		bool m_windowAnimationActive = false;
-		bool m_minimizeAfterAnimation = false;
 		bool m_minimizePending = false;
 		bool m_minimizeRestoreMaximized = false;
-		float m_animationElapsedSeconds = 0.0f;
-		float m_animationStartOpacity = 1.0f;
-		float m_animationTargetOpacity = 1.0f;
 		WindowBounds m_restoreBounds;
 		WindowBounds m_minimizeRestoreBounds;
-		WindowBounds m_animationStartBounds;
-		WindowBounds m_animationTargetBounds;
 
 		bool m_draggingWindow = false;
+		bool m_nativeMoveTracking = false;
 		bool m_resizingWindow = false;
 		int m_resizeEdges = 0;
 		int m_resizeStartMouseX = 0;

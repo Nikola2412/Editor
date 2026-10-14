@@ -44,12 +44,13 @@ project "Editor"
         "AsyncLogger"
    }
 
-   buildoptions { "/utf-8" }
-
-
    filter "system:windows"
       systemversion "latest"
       defines { "PLATFORM_WINDOWS" }
+      buildoptions { "/utf-8" }
+
+   filter "system:macosx"
+      files { "src/**.mm" }
 
    filter "configurations:Debug"
       defines { "DEBUG" }

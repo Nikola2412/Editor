@@ -18,9 +18,6 @@ project "EditorApp"
 	{
 		"src/**.h",
 		"src/**.cpp",
-		"EditorApp.aps",
-		"EditorApp.rc",
-		"resource.h",
 	}
 
 	includedirs
@@ -40,15 +37,14 @@ project "EditorApp"
 		"Editor"
 	}
 
-	buildoptions
-	{ 
-		"/utf-8" ,
-		"/IGNORE:4099"
-	}
-
 	filter "system:windows"
       systemversion "latest"
       defines { "PLATFORM_WINDOWS" }
+	  files { "EditorApp.aps", "EditorApp.rc", "resource.h" }
+	  buildoptions { "/utf-8", "/IGNORE:4099" }
+
+	filter "system:macosx"
+		linkoptions { "-framework Cocoa" }
 
 
 	filter "configurations:Debug"

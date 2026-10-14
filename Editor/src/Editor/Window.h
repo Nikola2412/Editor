@@ -41,6 +41,7 @@ namespace Editor {
 		void Resize(uint32_t w,uint32_t h);
 
 		void SetVSync(bool interval = true);
+		bool StartNativeMove();
 
 		void Init(const WindowProps& spec);
 
