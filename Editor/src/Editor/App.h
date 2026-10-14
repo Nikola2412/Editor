@@ -76,7 +76,7 @@ namespace Editor
 		Window& GetWindow() { return *m_WindowHandle; };
 
 
-		int GetFPS() const { return timestep.getSeconds() > 0 ? static_cast<int>(1.0f / timestep.getSeconds()) : 0; }
+		int GetFPS() const { return m_FPS; }
 
 		void RenderOneFrame(); // for refresh callback
 
@@ -92,6 +92,9 @@ namespace Editor
 		bool m_Running = true;
 		bool m_RenderingFrame = false;
 		float lastFrameTime = 0.0f;
+		float m_FPSWindowTime = 0.0f;
+		uint32_t m_FPSWindowFrames = 0;
+		int m_FPS = 0;
 
 		std::vector<Ref<Layer>> m_LayerStack;
 		std::function<void()> m_UICallback;

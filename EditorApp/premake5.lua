@@ -42,6 +42,7 @@ project "EditorApp"
       defines { "PLATFORM_WINDOWS" }
 	  files { "EditorApp.aps", "EditorApp.rc", "resource.h" }
 	  buildoptions { "/utf-8", "/IGNORE:4099" }
+	  links { "winmm" }
 
 	filter "system:macosx"
 		linkoptions { "-framework Cocoa" }

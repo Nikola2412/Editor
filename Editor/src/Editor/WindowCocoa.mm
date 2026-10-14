@@ -1,5 +1,7 @@
 #import <Cocoa/Cocoa.h>
 
+extern "C" void EditorRenderNativeMoveFrame();
+
 extern "C" bool EditorStartCocoaWindowMove(void* nativeWindow)
 {
 	NSWindow* window = reinterpret_cast<NSWindow*>(nativeWindow);
@@ -21,6 +23,16 @@ extern "C" bool EditorStartCocoaWindowMove(void* nativeWindow)
 	if (!mouseDown)
 		return false;
 
+	NSTimer* renderTimer = [NSTimer timerWithTimeInterval:1.0 / 60.0
+		repeats:YES
+		block:^(NSTimer*)
+		{
+			EditorRenderNativeMoveFrame();
+		}];
+	NSRunLoop* runLoop = [NSRunLoop mainRunLoop];
+	[runLoop addTimer:renderTimer forMode:NSRunLoopCommonModes];
+	[runLoop addTimer:renderTimer forMode:NSEventTrackingRunLoopMode];
 	[window performWindowDragWithEvent:mouseDown];
+	[renderTimer invalidate];
 	return true;
 }

@@ -48,9 +48,12 @@ namespace Editor {
 		void* GetNativeWindow() const { return m_Window; };
 
 	private:
+		void BeginNativeMove();
+
 		GLFWwindow* m_Window;
 		WindowProps m_Data;
 		bool minimized = false;
+		bool m_NativeMovePending = false;
 	};
 
 }

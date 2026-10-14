@@ -31,14 +31,7 @@ namespace Editor
 
 		while (m_Running)
 		{
-			float time = Time::GetTime();
-			timestep = time - lastFrameTime;
-
-			if (glfwGetWindowAttrib(static_cast<GLFWwindow*>(m_WindowHandle->GetNativeWindow()), GLFW_FOCUSED))
-				lastFrameTime = time;
-			
-
-			if (timestep.getSeconds() < 10 && !m_WindowHandle->isMinimized())
+			if (!m_WindowHandle->isMinimized())
 				RenderOneFrame();
 
 			m_WindowHandle->Update();
@@ -54,6 +47,12 @@ namespace Editor
 		if (!layer || m_RenderingFrame)
 			return;
 
+		const float time = Time::GetTime();
+		timestep = time - lastFrameTime;
+		lastFrameTime = time;
+		if (timestep.getSeconds() >= 10.0f || m_WindowHandle->isMinimized())
+			return;
+
 		m_RenderingFrame = true;
 		layer->OnUpdate(timestep);
 		layer->Begin();
@@ -62,6 +61,15 @@ namespace Editor
 		layer->OnUIRender();
 		layer->End();
 		m_RenderingFrame = false;
+
+		m_FPSWindowTime += timestep.getSeconds();
+		++m_FPSWindowFrames;
+		if (m_FPSWindowTime >= 0.5f)
+		{
+			m_FPS = static_cast<int>(m_FPSWindowFrames / m_FPSWindowTime + 0.5f);
+			m_FPSWindowTime = 0.0f;
+			m_FPSWindowFrames = 0;
+		}
 
 		//m_WindowHandle->Update();
 	}

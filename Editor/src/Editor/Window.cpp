@@ -5,6 +5,7 @@
 #ifdef _WIN32
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include <GLFW/glfw3native.h>
+#include <mmsystem.h>
 #elif defined(__APPLE__)
 #define GLFW_EXPOSE_NATIVE_COCOA
 #include <GLFW/glfw3native.h>
@@ -30,9 +31,17 @@ namespace Editor {
 
 #ifdef _WIN32
 	static WNDPROC glfwWindowProc = nullptr;
+	constexpr UINT_PTR NativeMoveTimerId = 1;
+	static void renderNativeMoveFrame();
 
 	static LRESULT CALLBACK borderlessWindowProc(HWND window, UINT message, WPARAM wParam, LPARAM lParam)
 	{
+		if (message == WM_TIMER && wParam == NativeMoveTimerId)
+		{
+			renderNativeMoveFrame();
+			return 0;
+		}
+
 		if (message == WM_NCCALCSIZE)
 		{
 			if (wParam && (GetWindowLongPtrW(window, GWL_STYLE) & WS_MAXIMIZE))
@@ -99,7 +108,24 @@ namespace Editor {
 #endif
 
 #if defined(__APPLE__)
+extern "C" void EditorRenderNativeMoveFrame();
 extern "C" bool EditorStartCocoaWindowMove(void* nativeWindow);
+#endif
+
+#if defined(_WIN32) || defined(__APPLE__)
+	static void renderNativeMoveFrame()
+	{
+		Application& app = Application::Get();
+		app.RenderOneFrame();
+		glfwSwapBuffers(static_cast<GLFWwindow*>(app.GetWindow().GetNativeWindow()));
+	}
+#endif
+
+#if defined(__APPLE__)
+	extern "C" void EditorRenderNativeMoveFrame()
+	{
+		renderNativeMoveFrame();
+	}
 #endif
 
 	static void on_window_size_callback(GLFWwindow* window, int width, int height)
@@ -223,6 +249,11 @@ extern "C" bool EditorStartCocoaWindowMove(void* nativeWindow);
 	void Window::Update()
 	{
 		glfwSwapBuffers(m_Window);
+		if (m_NativeMovePending)
+		{
+			m_NativeMovePending = false;
+			BeginNativeMove();
+		}
 		glfwPollEvents();
 	}
 
@@ -253,27 +284,10 @@ extern "C" bool EditorStartCocoaWindowMove(void* nativeWindow);
 	bool Window::StartNativeMove()
 	{
 #ifdef _WIN32
-		const HWND window = glfwGetWin32Window(m_Window);
-		POINT cursorPosition;
-		if (!GetCursorPos(&cursorPosition))
-		{
-			CORE_ERROR("Failed to get cursor position for native window move: {}", GetLastError());
-			return false;
-		}
-
-		ReleaseCapture();
-		SendMessageW(
-			window,
-			WM_NCLBUTTONDOWN,
-			HTCAPTION,
-			MAKELPARAM(cursorPosition.x, cursorPosition.y));
+		m_NativeMovePending = true;
 		return true;
 #elif defined(__APPLE__)
-		if (!EditorStartCocoaWindowMove(glfwGetCocoaWindow(m_Window)))
-		{
-			CORE_WARN("AppKit could not start a native window move; using the GLFW fallback.");
-			return false;
-		}
+		m_NativeMovePending = true;
 		return true;
 #elif defined(__linux__)
 		if (glfwGetPlatform() != GLFW_PLATFORM_X11)
@@ -287,12 +301,58 @@ extern "C" bool EditorStartCocoaWindowMove(void* nativeWindow);
 			return false;
 		}
 
+		m_NativeMovePending = true;
+		return true;
+#else
+		return false;
+#endif
+	}
+
+	void Window::BeginNativeMove()
+	{
+#ifdef _WIN32
+		const HWND window = glfwGetWin32Window(m_Window);
+		const bool raisedTimerResolution = timeBeginPeriod(1) == TIMERR_NOERROR;
+		if (!raisedTimerResolution)
+			CORE_WARN("Could not raise the timer resolution for native dragging.");
+
+		if (!SetTimer(window, NativeMoveTimerId, 1, nullptr))
+		{
+			CORE_ERROR("Failed to start the native-move render timer: {}", GetLastError());
+			if (raisedTimerResolution)
+				timeEndPeriod(1);
+			return;
+		}
+
+		POINT cursorPosition;
+		if (!GetCursorPos(&cursorPosition))
+		{
+			CORE_ERROR("Failed to get cursor position for native window move: {}", GetLastError());
+			KillTimer(window, NativeMoveTimerId);
+			if (raisedTimerResolution)
+				timeEndPeriod(1);
+			return;
+		}
+
+		ReleaseCapture();
+		SendMessageW(
+			window,
+			WM_NCLBUTTONDOWN,
+			HTCAPTION,
+			MAKELPARAM(cursorPosition.x, cursorPosition.y));
+		KillTimer(window, NativeMoveTimerId);
+		if (raisedTimerResolution)
+			timeEndPeriod(1);
+#elif defined(__APPLE__)
+		if (!EditorStartCocoaWindowMove(glfwGetCocoaWindow(m_Window)))
+			CORE_WARN("AppKit could not start a native window move.");
+#elif defined(__linux__)
 		Display* display = glfwGetX11Display();
 		const ::Window x11Window = glfwGetX11Window(m_Window);
 		if (!display || !x11Window)
 		{
 			CORE_WARN("Could not access the native X11 window; using the GLFW fallback.");
-			return false;
+			return;
 		}
 
 		int windowX = 0;
@@ -307,7 +367,10 @@ extern "C" bool EditorStartCocoaWindowMove(void* nativeWindow);
 		event.xclient.window = x11Window;
 		const Atom moveResize = XInternAtom(display, "_NET_WM_MOVERESIZE", False);
 		if (moveResize == None)
-			return false;
+		{
+			CORE_WARN("The X11 window manager does not support native window moving.");
+			return;
+		}
 		event.xclient.message_type = moveResize;
 		event.xclient.format = 32;
 		event.xclient.data.l[0] = windowX + static_cast<int>(cursorX);
@@ -324,12 +387,9 @@ extern "C" bool EditorStartCocoaWindowMove(void* nativeWindow);
 			&event))
 		{
 			CORE_WARN("The X11 window manager rejected the native move request.");
-			return false;
+			return;
 		}
 		XFlush(display);
-		return true;
-#else
-		return false;
 #endif
 	}
 }
