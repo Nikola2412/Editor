@@ -1,5 +1,6 @@
 #pragma once
 #include "Editor/Log.h"
+#include "Editor/Texture.h"
 
 struct GLFWcursor;
 struct GLFWwindow;
@@ -38,6 +39,7 @@ namespace Editor
 
 	private:
 		std::function<void()> m_UICallback;
+		Ref<Texture2D> m_ApplicationIcon;
 		bool m_dockSpace = false;
 		std::string m_Name;
 		GLFWwindow* window;

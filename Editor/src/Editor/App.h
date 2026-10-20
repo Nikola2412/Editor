@@ -62,6 +62,8 @@ namespace Editor
 
 		Ref<Layer> GetLayer() { return layer; };
 
+		const ApplicationSpecification& GetSpecification() const { return m_Spec; }
+
 		template<typename T>
 		inline T* GetLayer() {
 			return dynamic_cast<T*>(layer.get());
