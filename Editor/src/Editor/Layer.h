@@ -69,7 +69,6 @@ namespace Editor
 		WindowBounds m_minimizeRestoreBounds;
 
 		bool m_draggingWindow = false;
-		bool m_nativeMoveTracking = false;
 		bool m_resizingWindow = false;
 		int m_resizeEdges = 0;
 		int m_resizeStartMouseX = 0;

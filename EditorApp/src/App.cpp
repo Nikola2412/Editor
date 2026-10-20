@@ -56,9 +56,11 @@ void menuUI(Editor::Application* app)
     {
         bool* vsyncPtr = &(app->GetLayer<ExampleLayer>()->vSync);
         ImGui::Text("Settings");
+        ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(5.0f, 5.0f));
         if (ImGui::Checkbox("VSync", vsyncPtr)) {
             app->SetVSync(*vsyncPtr);
         }
+        ImGui::PopStyleVar();
         Timestep ts = app->GetTimestep();
         ImGui::Text("Frame Time: %.3f ms (%d FPS)", ts.getMilliseconds(), app->GetFPS());
         ImGui::Separator();

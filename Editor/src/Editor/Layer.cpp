@@ -176,18 +176,6 @@ namespace Editor
 			ImGui::GetIO().AddMouseButtonEvent(ImGuiMouseButton_Left, false);
 		ImGui::NewFrame();
 		updateMinimizeState();
-		if (m_nativeMoveTracking &&
-			(nativeMoveCompleted || !ImGui::IsMouseDown(ImGuiMouseButton_Left)))
-		{
-			m_nativeMoveTracking = false;
-			m_draggingWindow = false;
-			m_maximized = glfwGetWindowAttrib(window, GLFW_MAXIMIZED) == GLFW_TRUE;
-			if (!m_maximized)
-			{
-				glfwGetWindowPos(window, &m_restoreBounds.x, &m_restoreBounds.y);
-				glfwGetWindowSize(window, &m_restoreBounds.width, &m_restoreBounds.height);
-			}
-		}
 		updateWindowResize(window);
 	}
 	void Layer::End()
@@ -515,7 +503,6 @@ namespace Editor
 			{
 				toggleMaximize();
 				m_draggingWindow = false;
-				m_nativeMoveTracking = false;
 			}
 			else if (titleBarClicked && !m_resizingWindow && !m_minimizePending)
 			{
@@ -576,20 +563,12 @@ namespace Editor
 					{
 						const double dragDistanceX = screenX - m_dragStartMouseX;
 						const double dragDistanceY = screenY - m_dragStartMouseY;
-						if (dragDistanceX * dragDistanceX + dragDistanceY * dragDistanceY > 9.0 &&
-							app->GetWindow().StartNativeMove())
-						{
-							m_nativeMoveTracking = true;
-							m_draggingWindow = false;
-						}
-						else
-						{
-							const int targetX = m_dragStartWindowX +
-								static_cast<int>(dragDistanceX);
-							const int targetY = m_dragStartWindowY +
-								static_cast<int>(dragDistanceY);
+						const int targetX = m_dragStartWindowX +
+							static_cast<int>(dragDistanceX);
+						const int targetY = m_dragStartWindowY +
+							static_cast<int>(dragDistanceY);
+						if (targetX != currentWindowX || targetY != currentWindowY)
 							glfwSetWindowPos(window, targetX, targetY);
-						}
 					}
 				}
 				else
