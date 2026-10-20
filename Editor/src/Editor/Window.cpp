@@ -253,8 +253,18 @@ extern "C" bool EditorStartCocoaWindowMove(void* nativeWindow);
 		{
 			m_NativeMovePending = false;
 			BeginNativeMove();
+#if defined(_WIN32) || defined(__APPLE__)
+			m_NativeMoveCompleted = true;
+#endif
 		}
 		glfwPollEvents();
+	}
+
+	bool Window::ConsumeNativeMoveCompleted()
+	{
+		const bool completed = m_NativeMoveCompleted;
+		m_NativeMoveCompleted = false;
+		return completed;
 	}
 
 	bool Window::isMinimized() const

@@ -42,6 +42,7 @@ namespace Editor {
 
 		void SetVSync(bool interval = true);
 		bool StartNativeMove();
+		bool ConsumeNativeMoveCompleted();
 
 		void Init(const WindowProps& spec);
 
@@ -54,6 +55,7 @@ namespace Editor {
 		WindowProps m_Data;
 		bool minimized = false;
 		bool m_NativeMovePending = false;
+		bool m_NativeMoveCompleted = false;
 	};
 
 }

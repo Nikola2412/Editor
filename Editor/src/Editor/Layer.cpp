@@ -171,11 +171,16 @@ namespace Editor
 	{
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
+		const bool nativeMoveCompleted = app->GetWindow().ConsumeNativeMoveCompleted();
+		if (nativeMoveCompleted)
+			ImGui::GetIO().AddMouseButtonEvent(ImGuiMouseButton_Left, false);
 		ImGui::NewFrame();
 		updateMinimizeState();
-		if (m_nativeMoveTracking && !ImGui::IsMouseDown(ImGuiMouseButton_Left))
+		if (m_nativeMoveTracking &&
+			(nativeMoveCompleted || !ImGui::IsMouseDown(ImGuiMouseButton_Left)))
 		{
 			m_nativeMoveTracking = false;
+			m_draggingWindow = false;
 			m_maximized = glfwGetWindowAttrib(window, GLFW_MAXIMIZED) == GLFW_TRUE;
 			if (!m_maximized)
 			{
