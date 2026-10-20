@@ -176,6 +176,8 @@ namespace Editor
 			ImGui::GetIO().AddMouseButtonEvent(ImGuiMouseButton_Left, false);
 		ImGui::NewFrame();
 		updateMinimizeState();
+		if (!m_minimizePending)
+			m_maximized = glfwGetWindowAttrib(window, GLFW_MAXIMIZED) == GLFW_TRUE;
 		updateWindowResize(window);
 	}
 	void Layer::End()
@@ -506,19 +508,26 @@ namespace Editor
 			}
 			else if (titleBarClicked && !m_resizingWindow && !m_minimizePending)
 			{
-				glfwGetWindowPos(window, &m_dragStartWindowX, &m_dragStartWindowY);
-				double cursorX = 0.0;
-				double cursorY = 0.0;
-				glfwGetCursorPos(window, &cursorX, &cursorY);
-				m_dragStartMouseX = m_dragStartWindowX + cursorX;
-				m_dragStartMouseY = m_dragStartWindowY + cursorY;
-				if (glfwGetWindowAttrib(window, GLFW_MAXIMIZED) != GLFW_TRUE)
+				if (app->GetWindow().StartNativeMove())
 				{
-					glfwGetWindowPos(window, &m_restoreBounds.x, &m_restoreBounds.y);
-					glfwGetWindowSize(
-						window, &m_restoreBounds.width, &m_restoreBounds.height);
+					m_draggingWindow = false;
 				}
-				m_draggingWindow = true;
+				else
+				{
+					glfwGetWindowPos(window, &m_dragStartWindowX, &m_dragStartWindowY);
+					double cursorX = 0.0;
+					double cursorY = 0.0;
+					glfwGetCursorPos(window, &cursorX, &cursorY);
+					m_dragStartMouseX = m_dragStartWindowX + cursorX;
+					m_dragStartMouseY = m_dragStartWindowY + cursorY;
+					if (glfwGetWindowAttrib(window, GLFW_MAXIMIZED) != GLFW_TRUE)
+					{
+						glfwGetWindowPos(window, &m_restoreBounds.x, &m_restoreBounds.y);
+						glfwGetWindowSize(
+							window, &m_restoreBounds.width, &m_restoreBounds.height);
+					}
+					m_draggingWindow = true;
+				}
 			}
 
 			if (m_draggingWindow)
