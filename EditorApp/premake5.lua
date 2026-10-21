@@ -37,6 +37,11 @@ project "EditorApp"
 		"Editor"
 	}
 
+	if HasVulkanSDK then
+		libdirs { path.join(VulkanSDK, "Lib") }
+		links { "vulkan-1" }
+	end
+
 	filter "system:windows"
       systemversion "latest"
       defines { "PLATFORM_WINDOWS" }

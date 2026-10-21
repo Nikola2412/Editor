@@ -15,9 +15,19 @@ project "Editor"
    {
         "src/**.h",
         "src/**.cpp",
+        "vendor/imgui/backends/imgui_impl_glfw.cpp",
+        "vendor/imgui/backends/imgui_impl_opengl3.cpp",
         "vendor/glm/glm/**.hpp",
  	    "vendor/glm/glm/**.inl",
    }
+
+   if HasVulkanSDK then
+      files { "vendor/imgui/backends/imgui_impl_vulkan.cpp" }
+   end
+
+   filter "files:vendor/imgui/backends/*.cpp"
+      flags { "NoPCH" }
+   filter {}
 
    includedirs
    {
@@ -29,6 +39,13 @@ project "Editor"
         "%{IncludeDir.ImGui}",
         "%{IncludeDir.AsyncLogger}",
    }
+
+   if HasVulkanSDK then
+      includedirs { "%{IncludeDir.Vulkan}" }
+      libdirs { path.join(VulkanSDK, "Lib") }
+      defines { "EDITOR_HAS_VULKAN" }
+      links { "vulkan-1" }
+   end
 
    defines
    {

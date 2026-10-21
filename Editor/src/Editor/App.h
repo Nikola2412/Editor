@@ -27,7 +27,7 @@ namespace Editor
 	{
 	public:
 		Application(const ApplicationSpecification& applicationSpecification = ApplicationSpecification());
-		~Application() = default;
+		~Application();
 
 		void Run();
 

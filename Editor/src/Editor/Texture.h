@@ -3,6 +3,7 @@
 #include "Editor/Core.h"
 
 #include <string>
+#include <cstdint>
 
 namespace Editor {
 
@@ -33,7 +34,7 @@ namespace Editor {
 		virtual uint32_t GetWidth() const = 0;
 		virtual uint32_t GetHeight() const = 0;
 		virtual float GetRotation() const = 0;
-		virtual uint32_t GetRendererID() const = 0;
+		virtual uint64_t GetRendererID() const = 0;
 
 		virtual int Save(const std::string& path) const = 0;
 

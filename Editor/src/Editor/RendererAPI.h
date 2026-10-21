@@ -11,7 +11,9 @@ namespace Editor {
 	public:
 		enum class API
 		{
-			None = 0, OpenGL = 1
+			None = 0,
+			OpenGL = 1,
+			Vulkan = 2
 		};
 
 	public:
@@ -23,6 +25,7 @@ namespace Editor {
 		//virtual void Clear() = 0;
 
 		static API GetAPI() { return _API; }
+		static void SetAPI(API api) { _API = api; }
 
 		//static Scope<RendererAPI> Create();
 	private:

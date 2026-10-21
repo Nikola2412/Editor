@@ -30,7 +30,12 @@ void menuUI(Editor::Application* app)
         std::string s;
         if (FileDialog::SaveFile(PNG, s)) {
             Ref<Texture2D> tex = (app->GetLayer<ExampleLayer>())->GetCurrentTexture();
-            int res = tex->Save(s);
+            if (!tex)
+            {
+                CORE_WARN("There is no image to save.");
+                return;
+            }
+            tex->Save(s);
         }
         else {
             CORE_WARN("File dialog was canceled or an error occurred.");
@@ -82,8 +87,6 @@ void menuUI(Editor::Application* app)
 
 void ExampleLayer::onAttach()
 {
-    m_Next = Texture2D::Load("assets/next.png");
-    m_Prev = Texture2D::Load("assets/prev.png");
 
     m_TextureList.reserve(5);
 
@@ -94,6 +97,9 @@ void ExampleLayer::onAttach()
     AddTexture("assets/4.png");
 
     this->setImg();
+
+    m_Next = Texture2D::Load("assets/next.png");
+    m_Prev = Texture2D::Load("assets/prev.png");
 }
 
 void ExampleLayer::OnUIRender()
@@ -153,7 +159,7 @@ void ExampleLayer::OnUIRender()
         ImGui::TextDisabled("|  Click the image to adjust its settings");
         ImGui::Separator();
 
-        if (m_Next && m_Prev)
+        if (m_Next && m_Prev && !m_TextureList.empty())
         {
             const float buttonSize = 36.0f;
             const ImVec2 available = ImGui::GetContentRegionAvail();
@@ -311,9 +317,14 @@ void ExampleLayer::OnUIRender()
                 ImGui::SameLine();
                 if (ImGui::Button("Delete"))
                 {
-                    m_TextureList.erase(m_ListID);
+                    if (m_ListID < m_TextureList.size())
+                        m_TextureList.erase(m_ListID);
+                    m_ListID = m_TextureList.empty()
+                        ? 0
+                        : (std::min)(m_ListID, m_TextureList.size() - 1);
+                    setImg();
+                    m_PreviousTexID = m_CurrentTexID;
                     m_SlideTimer = 0.0f;
-                    nextImg(0);
                 }
 
                 ImGui::SameLine();
@@ -325,7 +336,7 @@ void ExampleLayer::OnUIRender()
         }
         else
         {
-            ImGui::TextDisabled("Preview controls are unavailable because the navigation images could not be loaded.");
+            ImGui::TextDisabled("Preview is unavailable until images and navigation controls are loaded.");
         }
     }
     ImGui::EndChild();

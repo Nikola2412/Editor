@@ -7,7 +7,11 @@
 
 namespace Editor {
 
+#ifdef EDITOR_HAS_VULKAN
+	RendererAPI::API RendererAPI::_API = RendererAPI::API::Vulkan;
+#else
 	RendererAPI::API RendererAPI::_API = RendererAPI::API::OpenGL;
+#endif
 
     void OpenGLMessageCallback(
         unsigned source,
@@ -43,6 +47,9 @@ namespace Editor {
 
     void RendererAPI::Init()
     {
+		if (_API != API::OpenGL)
+			return;
+
 #ifdef DEBUG
         glEnable(GL_DEBUG_OUTPUT);
         glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);

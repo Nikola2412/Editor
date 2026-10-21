@@ -14,6 +14,14 @@ IncludeDir["AsyncLogger"] =	"%{wks.location}/Editor/vendor/AsyncLogger/AsyncLogg
 IncludeDir["GLFW"]	=		"%{wks.location}/Editor/vendor/GLFW/include"
 IncludeDir["Glad"]	=		"%{wks.location}/Editor/vendor/Glad/include"
 
+VulkanSDK = os.getenv("VULKAN_SDK")
+HasVulkanSDK = VulkanSDK ~= nil
+	and os.isdir(path.join(VulkanSDK, "Include"))
+	and os.isdir(path.join(VulkanSDK, "Lib"))
+
+if HasVulkanSDK then
+	IncludeDir["Vulkan"] = path.join(VulkanSDK, "Include")
+end
 
 group "Dependencies"
    include "Editor/vendor/glfw"

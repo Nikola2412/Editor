@@ -18,7 +18,8 @@
 #include <stb_image.h>
 
 #include "Log.h"
-
+#include "RendererAPI.h"
+#include "VulkanRenderer.h"
 #include "App.h"
 
 namespace Editor {
@@ -117,7 +118,7 @@ extern "C" bool EditorStartCocoaWindowMove(void* nativeWindow);
 	{
 		Application& app = Application::Get();
 		app.RenderOneFrame();
-		glfwSwapBuffers(static_cast<GLFWwindow*>(app.GetWindow().GetNativeWindow()));
+		app.GetWindow().Present();
 	}
 #endif
 
@@ -140,7 +141,8 @@ extern "C" bool EditorStartCocoaWindowMove(void* nativeWindow);
 
 	static void on_framebuffer_size_callback(GLFWwindow* window, int width, int height)
 	{
-		glViewport(0, 0, width, height);
+		if (RendererAPI::GetAPI() == RendererAPI::API::OpenGL)
+			glViewport(0, 0, width, height);
 
 		auto* appWindow = static_cast<Window*>(glfwGetWindowUserPointer(window));
 
@@ -156,8 +158,7 @@ extern "C" bool EditorStartCocoaWindowMove(void* nativeWindow);
 			return;
 
 		Application::Get().RenderOneFrame();
-
-		glfwSwapBuffers(window);
+		Application::Get().GetWindow().Present();
 	}
 
 	static void on_window_close_callback(GLFWwindow* window)
@@ -175,15 +176,53 @@ extern "C" bool EditorStartCocoaWindowMove(void* nativeWindow);
 		printf("%s\n", glfwGetVersionString());
 		m_Data = spec;
 
+#ifndef EDITOR_HAS_VULKAN
+		CORE_WARN("Vulkan SDK was not detected at build time; using the OpenGL renderer.");
+#endif
+
 		if (GLFWWindowCount == 0)
 		{
-			int success = glfwInit();
 			glfwSetErrorCallback(glfw_error_callback);
+			if (!glfwInit())
+			{
+				CORE_ERROR("Failed to initialize GLFW.");
+				return;
+			}
 		}
 
 		{
 			glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
-			m_Window = glfwCreateWindow((int)spec.Width, (int)spec.Height, spec.Title.c_str(), nullptr, nullptr);
+			bool vulkanInitialized = false;
+#ifdef EDITOR_HAS_VULKAN
+			if (RendererAPI::GetAPI() == RendererAPI::API::Vulkan)
+			{
+				glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+				m_Window = glfwCreateWindow((int)spec.Width, (int)spec.Height, spec.Title.c_str(), nullptr, nullptr);
+				if (m_Window)
+					vulkanInitialized = VulkanRenderer::Init(m_Window, spec.Width, spec.Height, spec.VSync);
+				if (vulkanInitialized)
+					CORE_INFO("Using Vulkan renderer.");
+				else if (m_Window)
+				{
+					glfwDestroyWindow(m_Window);
+					m_Window = nullptr;
+				}
+			}
+#endif
+			if (!vulkanInitialized)
+			{
+				RendererAPI::SetAPI(RendererAPI::API::OpenGL);
+				glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
+				glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+				glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
+				glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+				m_Window = glfwCreateWindow((int)spec.Width, (int)spec.Height, spec.Title.c_str(), nullptr, nullptr);
+			}
+			if (!m_Window)
+			{
+				CORE_ERROR("Failed to create the GLFW window.");
+				return;
+			}
 			GLFWWindowCount++;
 		}
 
@@ -211,18 +250,20 @@ extern "C" bool EditorStartCocoaWindowMove(void* nativeWindow);
 			// This callback is invoked when the window needs to be redrawn, including
 			// during native move/resize modal loops on some platforms (notably Windows).
 
-			glfwMakeContextCurrent(m_Window);
-
-			SetVSync(spec.VSync);
+			if (RendererAPI::GetAPI() == RendererAPI::API::OpenGL)
+			{
+				glfwMakeContextCurrent(m_Window);
+				SetVSync(spec.VSync);
+			}
 		}
 
-		int status = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
-
-
-		if (!status)
+		if (RendererAPI::GetAPI() == RendererAPI::API::OpenGL)
 		{
-			CORE_ERROR("Failed to initialize OpenGL context!");
-			exit(-1);
+			if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+			{
+				CORE_ERROR("Failed to initialize OpenGL context.");
+				return;
+			}
 		}
 
 		//std::cout << spec.Title << '\n';
@@ -237,6 +278,12 @@ extern "C" bool EditorStartCocoaWindowMove(void* nativeWindow);
 
 	Window::~Window()
 	{
+#ifdef EDITOR_HAS_VULKAN
+		if (RendererAPI::GetAPI() == RendererAPI::API::Vulkan)
+			VulkanRenderer::Shutdown();
+#endif
+		if (!m_Window)
+			return;
 		glfwDestroyWindow(m_Window);
 		GLFWWindowCount--;
 		if (GLFWWindowCount == 0)
@@ -248,7 +295,8 @@ extern "C" bool EditorStartCocoaWindowMove(void* nativeWindow);
 
 	void Window::Update()
 	{
-		glfwSwapBuffers(m_Window);
+		if (!m_Window)
+			return;
 		if (m_NativeMovePending)
 		{
 			m_NativeMovePending = false;
@@ -257,7 +305,19 @@ extern "C" bool EditorStartCocoaWindowMove(void* nativeWindow);
 			m_NativeMoveCompleted = true;
 #endif
 		}
-		glfwPollEvents();
+		if (isMinimized())
+			glfwWaitEvents();
+		else
+		{
+			Present();
+			glfwPollEvents();
+		}
+	}
+
+	void Window::Present()
+	{
+		if (m_Window && RendererAPI::GetAPI() == RendererAPI::API::OpenGL)
+			glfwSwapBuffers(m_Window);
 	}
 
 	bool Window::ConsumeNativeMoveCompleted()
@@ -269,7 +329,15 @@ extern "C" bool EditorStartCocoaWindowMove(void* nativeWindow);
 
 	bool Window::isMinimized() const
 	{
-		return minimized;// || glfwGetWindowAttrib(m_Window, GLFW_ICONIFIED) == GLFW_TRUE;
+		if (!m_Window)
+			return true;
+
+#ifdef _WIN32
+		if (IsIconic(glfwGetWin32Window(m_Window)))
+			return true;
+#endif
+
+		return minimized || glfwGetWindowAttrib(m_Window, GLFW_ICONIFIED) == GLFW_TRUE;
 	}
 
 	void Window::Resize(uint32_t w, uint32_t h)
@@ -280,11 +348,17 @@ extern "C" bool EditorStartCocoaWindowMove(void* nativeWindow);
 		minimized = (w == 0 || h == 0);
 
 		//CORE_INFO("Resize: {0} {1}", std::to_string(w), std::to_string(h));
-		glViewport(0, 0, w, h);
+		if (RendererAPI::GetAPI() == RendererAPI::API::OpenGL)
+			glViewport(0, 0, w, h);
 	}
 	void Window::SetVSync(bool interval)
 	{
-		glfwSwapInterval(interval ? 1 : 0);
+#ifdef EDITOR_HAS_VULKAN
+		if (RendererAPI::GetAPI() == RendererAPI::API::Vulkan)
+			VulkanRenderer::SetVSync(interval);
+		else
+#endif
+			glfwSwapInterval(interval ? 1 : 0);
 
 		CORE_INFO("VSync: " + std::string(interval ? "Enabled" : "Disabled"));
 

@@ -18,7 +18,7 @@ namespace Editor {
         virtual uint32_t GetWidth() const override { return width; }
         virtual uint32_t GetHeight() const override { return height; }
 		virtual float GetRotation() const override { return rotation; }
-        virtual uint32_t GetRendererID() const override { return rendererID; }
+        virtual uint64_t GetRendererID() const override { return rendererID; }
 
         virtual int Save(const std::string& path) const override;
 

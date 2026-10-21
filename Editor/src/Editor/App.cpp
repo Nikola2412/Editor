@@ -20,38 +20,58 @@ namespace Editor
 		);
 	}
 
-	/*Application::~Application()
+	Application::~Application()
 	{
+		if (layer)
+		{
+			layer->OnDetach();
+			layer.reset();
+		}
 		Shutdown();
 		Instance = nullptr;
-	}*/
+	}
 
 	void Application::Run()
 	{
-
+		bool wasMinimized = false;
 		while (m_Running)
 		{
-			if (!m_WindowHandle->isMinimized())
+			const bool minimized = m_WindowHandle->isMinimized();
+			if (minimized != wasMinimized)
+			{
+				if (minimized)
+					CORE_INFO("Window is minimized.");
+				wasMinimized = minimized;
+			}
+
+			if (!minimized)
 				RenderOneFrame();
 
 			m_WindowHandle->Update();
 		}
-		layer->OnDetach();
-		//Shutdown();
+		if (layer)
+		{
+			layer->OnDetach();
+			layer.reset();
+		}
+		Shutdown();
 	}
 
 	void Application::RenderOneFrame()
 	{
 		// This mirrors the per-frame UI steps used in Run(), but performs only the UI render
 		// so it is safe to call from the refresh callback.
-		if (!layer || m_RenderingFrame)
+		if (!layer)
 			return;
 
 		const float time = Time::GetTime();
 		timestep = time - lastFrameTime;
 		lastFrameTime = time;
 		if (timestep.getSeconds() >= 10.0f || m_WindowHandle->isMinimized())
+		{
+			CORE_INFO("Time: {0} seconds", timestep.getSeconds());
 			return;
+		}
 
 		m_RenderingFrame = true;
 		layer->OnUpdate(timestep);

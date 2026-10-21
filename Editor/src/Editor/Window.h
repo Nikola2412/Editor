@@ -37,6 +37,7 @@ namespace Editor {
 		bool isMinimized() const;
 
 		void Update();
+		void Present();
 
 		void Resize(uint32_t w,uint32_t h);
 
@@ -51,7 +52,7 @@ namespace Editor {
 	private:
 		void BeginNativeMove();
 
-		GLFWwindow* m_Window;
+		GLFWwindow* m_Window = nullptr;
 		WindowProps m_Data;
 		bool minimized = false;
 		bool m_NativeMovePending = false;

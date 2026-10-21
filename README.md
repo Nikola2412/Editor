@@ -16,6 +16,8 @@ A lightweight desktop application builder built in C++20, using GLFW and Dear Im
 
 - C++20
 - GLFW
+- Vulkan (optional renderer; preferred when the Vulkan SDK is available)
+- OpenGL (fallback renderer)
 - Glad
 - Dear ImGui
 - GLM
@@ -30,6 +32,7 @@ Before building the project, make sure you have:
 - Visual Studio 2022/26
 - Desktop development with C++ workload installed
 - Git with submodules support enabled
+- The Vulkan SDK is optional. When `VULKAN_SDK` is set to a valid SDK installation, Vulkan is enabled and used by default; otherwise the editor builds with OpenGL.
 
 ## Quick Start
 
@@ -54,6 +57,8 @@ This uses the bundled Premake toolchain to generate the project files for Visual
 
 Then open the generated solution in Visual Studio, set `EditorApp` as the startup project, and build the solution.
 
+To enable Vulkan, install the Vulkan SDK and set the `VULKAN_SDK` environment variable before generating the solution. The application will try Vulkan first and fall back to OpenGL if Vulkan initialization is unavailable.
+
 ## Project Structure
 
 ```text
@@ -77,4 +82,3 @@ Editor/
 ## License
 
 This project is distributed under the terms of the included license. See [LICENSE](LICENSE) for details.
-

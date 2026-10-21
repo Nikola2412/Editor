@@ -14,6 +14,8 @@
 #include <glad/glad.h>
 
 #include "App.h"
+#include "RendererAPI.h"
+#include "VulkanRenderer.h"
 
 namespace Editor
 {
@@ -35,7 +37,17 @@ namespace Editor
 		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;       // Enable Keyboard Controls
 		//io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
 		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;           // Enable Docking
-		io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;         // Enable Multi-Viewport / Platform Windows
+#ifdef EDITOR_HAS_VULKAN
+		if (RendererAPI::GetAPI() == RendererAPI::API::OpenGL)
+		{
+			io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+		}
+		else
+		{
+			io.ConfigFlags &= ~ImGuiConfigFlags_ViewportsEnable;
+		}
+#endif
+		// Detached platform windows require a renderer backend for each window.
 		//io.ConfigFlags |= ImGuiConfigFlags_ViewportsNoTaskBarIcons;
 		//io.ConfigFlags |= ImGuiConfigFlags_ViewportsNoMerge;
 		io.ConfigFlags |= ImGuiConfigFlags_DpiEnableScaleViewports;
@@ -125,7 +137,6 @@ namespace Editor
 		colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.04f, 0.05f, 0.07f, 0.70f);
 
 		this->app = Application::GetInstance();
-		m_ApplicationIcon = Texture2D::Load(app->GetSpecification().Icon);
 		this->window = static_cast<GLFWwindow*>(app->GetWindow().GetNativeWindow());
 		glfwGetWindowPos(window, &m_restoreBounds.x, &m_restoreBounds.y);
 		glfwGetWindowSize(window, &m_restoreBounds.width, &m_restoreBounds.height);
@@ -140,8 +151,25 @@ namespace Editor
 		m_resizeCursorDiagonalNESW = glfwCreateStandardCursor(GLFW_RESIZE_NESW_CURSOR);
 
 		// Setup Platform/Renderer bindings
-		ImGui_ImplGlfw_InitForOpenGL(window, true);
-		ImGui_ImplOpenGL3_Init("#version 410");
+		bool rendererInitialized = false;
+#ifdef EDITOR_HAS_VULKAN
+		if (RendererAPI::GetAPI() == RendererAPI::API::Vulkan)
+		{
+			rendererInitialized = ImGui_ImplGlfw_InitForVulkan(window, true) &&
+				VulkanRenderer::InitImGui();
+		}
+		else
+#endif
+		{
+			rendererInitialized = ImGui_ImplGlfw_InitForOpenGL(window, true) &&
+				ImGui_ImplOpenGL3_Init("#version 410");
+		}
+		if (!rendererInitialized)
+		{
+			CORE_ERROR("Failed to initialize the ImGui renderer backend.");
+			return;
+		}
+		m_ApplicationIcon = Texture2D::Load(app->GetSpecification().Icon);
 
 		this->onAttach();
 
@@ -152,7 +180,12 @@ namespace Editor
 		CORE_INFO("Layer: {} detached", this->GetName());
 		saveWindowBounds();
 		// Cleanup ImGui
-		ImGui_ImplOpenGL3_Shutdown();
+#ifdef EDITOR_HAS_VULKAN
+		if (RendererAPI::GetAPI() == RendererAPI::API::Vulkan)
+			VulkanRenderer::ShutdownImGui();
+		else
+#endif
+			ImGui_ImplOpenGL3_Shutdown();
 		ImGui_ImplGlfw_Shutdown();
 		/*GLFWwindow* window = static_cast<GLFWwindow*>(app->GetWindow().GetNativeWindow());
 		glfwSetCursor(window, nullptr);
@@ -169,7 +202,12 @@ namespace Editor
 
 	void Layer::Begin()
 	{
-		ImGui_ImplOpenGL3_NewFrame();
+#ifdef EDITOR_HAS_VULKAN
+		if (RendererAPI::GetAPI() == RendererAPI::API::Vulkan)
+			VulkanRenderer::NewFrame();
+		else
+#endif
+			ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		const bool nativeMoveCompleted = app->GetWindow().ConsumeNativeMoveCompleted();
 		if (nativeMoveCompleted)
@@ -191,9 +229,15 @@ namespace Editor
 
 		// Rendering
 		ImGui::Render();
-		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+#ifdef EDITOR_HAS_VULKAN
+		if (RendererAPI::GetAPI() == RendererAPI::API::Vulkan)
+			VulkanRenderer::Render(ImGui::GetDrawData());
+		else
+#endif
+			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+		if (RendererAPI::GetAPI() == RendererAPI::API::OpenGL &&
+			(io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable))
 		{
 			GLFWwindow* backup_current_context = glfwGetCurrentContext();
 			ImGui::UpdatePlatformWindows();
@@ -204,8 +248,11 @@ namespace Editor
 	void Layer::OnUpdate(float deltaTime)
 	{
 		//Log::GetCoreLogger()->Info("Layer: " + this->GetName() + " updated");
-		glClearColor(0.1f, 0.1f, 0.1f, 1);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		if (RendererAPI::GetAPI() == RendererAPI::API::OpenGL)
+		{
+			glClearColor(0.1f, 0.1f, 0.1f, 1);
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		}
 	}
 
 	void Layer::dockSpace()
