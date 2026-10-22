@@ -34,22 +34,34 @@ namespace Editor {
 			return 0;
 		}
 
+		static uint32_t CreateTexture2D(uint32_t width, uint32_t height, GLenum internalFormat, GLenum dataFormat, const void* data)
+		{
+			GLint previousTexture = 0;
+			glGetIntegerv(GL_TEXTURE_BINDING_2D, &previousTexture);
+
+			uint32_t rendererID = 0;
+			glGenTextures(1, &rendererID);
+			glBindTexture(GL_TEXTURE_2D, rendererID);
+
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+			glTexImage2D(GL_TEXTURE_2D, 0, static_cast<GLint>(internalFormat), width, height, 0, dataFormat, GL_UNSIGNED_BYTE, data);
+			glBindTexture(GL_TEXTURE_2D, previousTexture);
+
+			return rendererID;
+		}
+
 	}
 
-	OpenGLTexture2D::OpenGLTexture2D(const TextureSpecification& spec) : spec(spec), width(spec.Width), height(spec.Height)
+	OpenGLTexture2D::OpenGLTexture2D(const TextureSpecification& spec) : spec(spec), width(spec.Width), height(spec.Height), rendererID(0)
 	{
 
 		internalFormat = Utils::ImageFormatToGLInternalFormat(spec.Format);
 		dataFormat = Utils::ImageFormatToGLDataFormat(spec.Format);
 
-		glCreateTextures(GL_TEXTURE_2D, 1, &rendererID);
-		glTextureStorage2D(rendererID, 1, internalFormat, width, width);
-
-		glTextureParameteri(rendererID, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTextureParameteri(rendererID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-		glTextureParameteri(rendererID, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		glTextureParameteri(rendererID, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		rendererID = Utils::CreateTexture2D(width, height, internalFormat, dataFormat, nullptr);
 	}
 
 	OpenGLTexture2D::OpenGLTexture2D(const std::string& path) : path(path), height(0), width(0), rendererID(0)
@@ -96,16 +108,16 @@ namespace Editor {
 
 			ASSERT(internalFormat && dataFormat, "Format not supported!");
 
-			glCreateTextures(GL_TEXTURE_2D, 1, &rendererID);
-			glTextureStorage2D(rendererID, 1, internalFormat, width, height);
+			rendererID = Utils::CreateTexture2D(width, height, internalFormat, dataFormat, data);
+			//glCreateTextures(GL_TEXTURE_2D, 1, &rendererID);
+			//glTextureStorage2D(rendererID, 1, internalFormat, width, width);
 
-			glTextureParameteri(rendererID, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-			glTextureParameteri(rendererID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+			//glTextureParameteri(rendererID, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+			//glTextureParameteri(rendererID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-			glTextureParameteri(rendererID, GL_TEXTURE_WRAP_S, GL_REPEAT);
-			glTextureParameteri(rendererID, GL_TEXTURE_WRAP_T, GL_REPEAT);
+			//glTextureParameteri(rendererID, GL_TEXTURE_WRAP_S, GL_REPEAT);
+			//glTextureParameteri(rendererID, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-			glTextureSubImage2D(rendererID, 0, 0, 0, width, height, dataFormat, GL_UNSIGNED_BYTE, data);
 			stbi_image_free(data);
 		}
 		else
@@ -189,11 +201,19 @@ namespace Editor {
 
 		uint32_t bpp = dataFormat == GL_RGBA ? 4 : 3;
 		ASSERT(size == width * height * bpp, "Data must be entire texture!");
-		glTextureSubImage2D(rendererID, 0, 0, 0, width, height, dataFormat, GL_UNSIGNED_BYTE, data);
+		GLint previousTexture = 0;
+		glGetIntegerv(GL_TEXTURE_BINDING_2D, &previousTexture);
+		glBindTexture(GL_TEXTURE_2D, rendererID);
+		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, dataFormat, GL_UNSIGNED_BYTE, data);
+		glBindTexture(GL_TEXTURE_2D, previousTexture);
 	}
 
 	void OpenGLTexture2D::Bind(uint32_t slot) const
 	{
-		glBindTextureUnit(slot, rendererID);
+		GLint activeTexture = 0;
+		glGetIntegerv(GL_ACTIVE_TEXTURE, &activeTexture);
+		glActiveTexture(GL_TEXTURE0 + slot);
+		glBindTexture(GL_TEXTURE_2D, rendererID);
+		glActiveTexture(activeTexture);
 	}
 }
