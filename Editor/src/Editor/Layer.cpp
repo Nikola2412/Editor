@@ -8,6 +8,7 @@
 #include "backends/imgui_impl_opengl3.h"
 
 #include <cmath>
+#include <cstdint>
 #include <fstream>
 
 #include <GLFW/glfw3.h>
@@ -316,6 +317,65 @@ namespace Editor
 		if (!(stateFile >> savedBounds.x >> savedBounds.y >> savedBounds.width >> savedBounds.height) ||
 			savedBounds.width < 320 || savedBounds.height < 200)
 			return false;
+
+		int monitorCount = 0;
+		GLFWmonitor** monitors = glfwGetMonitors(&monitorCount);
+		bool titleBarVisible = false;
+		const int64_t titleBarHeight = (std::min)(savedBounds.height,
+			static_cast<int>(ApplicationTitleBarHeight));
+		const int64_t minimumVisibleWidth = (std::min)(savedBounds.width, 320);
+		for (int index = 0; monitors && index < monitorCount; ++index)
+		{
+			int monitorX = 0;
+			int monitorY = 0;
+			int monitorWidth = 0;
+			int monitorHeight = 0;
+			glfwGetMonitorWorkarea(
+				monitors[index], &monitorX, &monitorY, &monitorWidth, &monitorHeight);
+
+			const int64_t overlapWidth = (std::min)(
+				static_cast<int64_t>(savedBounds.x) + savedBounds.width,
+				static_cast<int64_t>(monitorX) + monitorWidth) -
+				(std::max)(static_cast<int64_t>(savedBounds.x), static_cast<int64_t>(monitorX));
+			const int64_t overlapHeight = (std::min)(
+				static_cast<int64_t>(savedBounds.y) + titleBarHeight,
+				static_cast<int64_t>(monitorY) + monitorHeight) -
+				(std::max)(static_cast<int64_t>(savedBounds.y), static_cast<int64_t>(monitorY));
+			if (overlapWidth >= minimumVisibleWidth &&
+				overlapHeight >= titleBarHeight)
+			{
+				titleBarVisible = true;
+				break;
+			}
+		}
+
+		if (!titleBarVisible)
+		{
+			GLFWmonitor* primaryMonitor = glfwGetPrimaryMonitor();
+			if (primaryMonitor)
+			{
+				int monitorX = 0;
+				int monitorY = 0;
+				int monitorWidth = 0;
+				int monitorHeight = 0;
+				glfwGetMonitorWorkarea(
+					primaryMonitor, &monitorX, &monitorY, &monitorWidth, &monitorHeight);
+
+				const int64_t minimumX =
+					static_cast<int64_t>(monitorX) + minimumVisibleWidth - savedBounds.width;
+				const int64_t maximumX =
+					static_cast<int64_t>(monitorX) + monitorWidth - minimumVisibleWidth;
+				const int64_t minimumY =
+					static_cast<int64_t>(monitorY) + titleBarHeight - titleBarHeight;
+				const int64_t maximumY =
+					static_cast<int64_t>(monitorY) + monitorHeight - titleBarHeight;
+				savedBounds.x = static_cast<int>((std::clamp)(
+					static_cast<int64_t>(savedBounds.x), minimumX, maximumX));
+				savedBounds.y = static_cast<int>((std::clamp)(
+					static_cast<int64_t>(savedBounds.y), minimumY, maximumY));
+				CORE_WARN("Saved window position was off-screen; restoring it onto the primary monitor.");
+			}
+		}
 
 		bounds = savedBounds;
 		return true;
